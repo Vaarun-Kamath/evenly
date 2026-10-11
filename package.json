@@ -1,6 +1,6 @@
 {
   "name": "evenly",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Evenly: a free, open-source, self-hostable app for splitting shared expenses.",
   "license": "AGPL-3.0-only",

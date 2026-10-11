@@ -1,6 +1,6 @@
 {
   "name": "@evenly/contracts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "zod schemas and TypeScript types shared by the server and the web app.",
   "license": "AGPL-3.0-only",

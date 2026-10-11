@@ -1,6 +1,6 @@
 {
   "name": "@evenly/e2e",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "End-to-end tests (Playwright) for the built Evenly image. Run with scripts/e2e.sh.",
   "license": "AGPL-3.0-only",

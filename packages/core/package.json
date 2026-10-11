@@ -1,6 +1,6 @@
 {
   "name": "@evenly/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Pure domain logic (money, splits, balances). No I/O, no runtime dependencies.",
   "license": "AGPL-3.0-only",

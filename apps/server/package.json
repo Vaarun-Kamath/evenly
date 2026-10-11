@@ -1,6 +1,6 @@
 {
   "name": "@evenly/server",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Evenly API server. In production it also serves the built web app.",
   "license": "AGPL-3.0-only",

@@ -5,6 +5,10 @@ and the project uses [Semantic Versioning](https://semver.org/) once it reaches 
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-11
+
+The first public release.
+
 ### Added
 
 - Web app: sign up, log in and password reset; a dashboard with totals across groups; groups with expenses, balances

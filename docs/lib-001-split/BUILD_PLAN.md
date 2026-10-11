@@ -70,6 +70,8 @@ commits on `main` if you're working alone). Check items off in this file as you 
 - [x] README: screenshots, features, a "Self-host in 2 minutes" section (`docker compose up`), configuration table, an honest comparison with commercial alternatives, roadmap.
 - [ ] `release.yml` → multi-arch image on GHCR; tag `v0.1.0`. (The workflow is written; it runs when the tag is pushed.)
 - [ ] Deploy to the hosted instance (PLATFORM.md §5): create the `lib001` database and role, set the environment variables, point the domain at it.
+      (The runbook is `DEPLOY.md`. Its database provisioning and the app's start-up against that least-privilege role were checked
+      on a throwaway Postgres 18; running it on the real server is the owner's step.)
 - [ ] Back up the hosted database and test a restore. (The procedure is in the README and is tested on a throwaway stack by
       `scripts/backup-restore-test.sh`, which CI runs; what remains is doing it on the hosted instance.)
 - [ ] Tell the portfolio owner the repo URL, version and upstream URL, so the portfolio can add the `/evenly`
