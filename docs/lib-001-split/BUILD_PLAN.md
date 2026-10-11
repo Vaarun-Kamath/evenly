@@ -68,7 +68,9 @@ commits on `main` if you're working alone). Check items off in this file as you 
 
 ## M6: Release
 - [x] README: screenshots, features, a "Self-host in 2 minutes" section (`docker compose up`), configuration table, an honest comparison with commercial alternatives, roadmap.
-- [ ] `release.yml` → multi-arch image on GHCR; tag `v0.1.0`. (The workflow is written; it runs when the tag is pushed.)
+- [x] `release.yml` → multi-arch image on GHCR; tag `v0.1.0`. (Published 2026-10-11. Checked afterwards: the GitHub release
+      carries the CHANGELOG notes; `ghcr.io/vaarun-kamath/evenly:0.1.0` is a linux/amd64 + linux/arm64 index that can be pulled
+      without logging in; `docker compose pull && docker compose up -d` from the bare `docker-compose.yml` starts a healthy app.)
 - [ ] Deploy to the hosted instance (PLATFORM.md §5): create the `lib001` database and role, set the environment variables, point the domain at it.
       (The runbook is `DEPLOY.md`. Its database provisioning and the app's start-up against that least-privilege role were checked
       on a throwaway Postgres 18; running it on the real server is the owner's step.)
