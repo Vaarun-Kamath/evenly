@@ -9,7 +9,7 @@ Software" initiative; this repo lives at `liberated-split/evenly` next to other 
 - `docs/PLATFORM.md`: conventions shared by all Liberated Software projects.
 - `docs/lib-001-split/SPEC.md`: what to build. `ARCHITECTURE.md`: how. `BUILD_PLAN.md`: milestones M0 to M6.
 - `docs/adr/`: decisions that deviate from or fill gaps in those docs. **An ADR wins over the older docs.**
-  Read all of them (0001 to 0006) before changing the stack, auth, base path, membership or money details.
+  Read all of them (0001 to 0007) before changing the stack, auth, base path, membership or money details.
 - The portfolio repo (`../../Portfolio`) is the master copy of the handoff docs. Never modify it from here.
 
 ## Status
@@ -27,6 +27,11 @@ packages/core   Pure money/split/balance logic. No I/O, no runtime dependencies.
 packages/contracts  zod schemas + types shared by server and web.
 ```
 
+Server layout (`apps/server/src`): `db/` (Drizzle schema, migrations runner, client), `auth/` (Better Auth
+config, HTTP bridge, limiter), `http/` (errors, Origin guard), `modules/<feature>/routes.ts`, `cli/`, `mail/`.
+Migrations are SQL in `apps/server/drizzle/` (`pnpm --filter @evenly/server db:generate`; hand-written ones with
+`--custom`). `src/db/auth-schema.ts` is generated; do not edit it.
+
 Workspace packages export TypeScript source directly (no per-package build). The server bundles them.
 
 ## Commands
@@ -35,6 +40,8 @@ Workspace packages export TypeScript source directly (no per-package build). The
 pnpm install
 pnpm check            # lint + format:check + typecheck + test (what CI runs)
 pnpm dev              # server :3000 and web :5173 (needs Postgres, see README)
+pnpm --filter @evenly/server test:unit          # no database needed
+pnpm --filter @evenly/server test:integration   # needs Postgres (see README); one database per test file
 pnpm build
 ./scripts/smoke.sh    # builds the Docker image, checks it at / and /evenly (needs Docker running)
 ```

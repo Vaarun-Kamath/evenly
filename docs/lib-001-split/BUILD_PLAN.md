@@ -28,14 +28,14 @@ commits on `main` if you're working alone). Check items off in this file as you 
 **Done when** the property tests pass with 10k runs each, and SPEC.md scenarios 2–4 pass as unit tests.
 
 ## M2: Database and auth
-- [ ] Drizzle schema matching ARCHITECTURE.md §4, the first migration, the deferred sum-check trigger.
-- [ ] Migrations at startup under an advisory lock; `node dist/migrate.js`.
-- [ ] Custom SQL migrations (`drizzle-kit generate --custom`) for `citext` and the deferred sum-check trigger; the migration lock uses one reserved connection (ADR-0004).
-- [ ] Decide `SESSION_SECRET`: required, or generated and stored, keeping `docker compose up` zero-config.
-- [ ] Auth library: sign up, log in, log out, log out everywhere, sessions; `ALLOW_SIGNUPS`; rate limits; Origin check.
-- [ ] Auth cookie `Path=BASE_PATH`, `Secure` only for an https `PUBLIC_URL`, Origin check against `PUBLIC_URL` (ADR-0002); assert the `Set-Cookie` header in a test.
-- [ ] CLI: `reset-password <email>`.
-- [ ] Integration test setup against a real Postgres (each test in its own transaction, or a fresh schema per file).
+- [x] Drizzle schema matching ARCHITECTURE.md §4, the first migration, the deferred sum-check trigger.
+- [x] Migrations at startup under an advisory lock; `node dist/migrate.js`.
+- [x] Custom SQL migrations (`drizzle-kit generate --custom`) for `citext` and the deferred sum-check trigger; the migration lock uses one reserved connection (ADR-0004).
+- [x] Decide `SESSION_SECRET`: optional; generated and stored in the database when unset, keeping `docker compose up` zero-config (ADR-0007).
+- [x] Auth library: sign up, log in, log out, log out everywhere, sessions; `ALLOW_SIGNUPS`; rate limits; Origin check. Also `GET`/`PATCH /api/v1/me` and password reset by email when SMTP is set (ADR-0007).
+- [x] Auth cookie `Path=BASE_PATH`, `Secure` only for an https `PUBLIC_URL`, Origin check against `PUBLIC_URL` (ADR-0002); assert the `Set-Cookie` header in a test.
+- [x] CLI: `reset-password <email>`.
+- [x] Integration test setup against a real Postgres (a fresh database per test file, copied from a migrated template; `pnpm --filter @evenly/server test:integration`).
 
 **Done when** integration tests cover sign up → log in → `GET /me` → log out, plus rate limiting and the Origin check.
 
@@ -43,6 +43,8 @@ commits on `main` if you're working alone). Check items off in this file as you 
 - [ ] Group CRUD, archive, `simplify_debts` setting, roles and `requireMember`.
 - [ ] Placeholder members; invite links (expiry, max uses, revoke); preview; accept; claiming a placeholder.
 - [ ] Owner, claim-invite, account-deletion and rejoin rules from ADR-0003, each with a test.
+- [ ] Provide the `InviteGate` that lets `ALLOW_SIGNUPS=invite-only` accept a sign-up with a valid invite (ADR-0007).
+- [ ] Keep `group_members.display_name` of real members in step when a user renames themselves (`PATCH /me`).
 - [ ] Leave/remove only with a zero balance (wired up properly once M4 exists; until then, check that no expenses exist).
 - [ ] Non-members get 404 on every group route (one parameterised test covering all routes).
 - [ ] Activity rows for every change.

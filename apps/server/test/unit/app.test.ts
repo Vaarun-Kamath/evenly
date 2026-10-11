@@ -123,6 +123,15 @@ describe("database down", () => {
   });
 });
 
+describe("migrations behind", () => {
+  it("reports 503 on /readyz while the database is not migrated", async () => {
+    const app = await makeApp({ staticDir, migrated: false });
+    expect((await app.inject({ url: "/readyz" })).statusCode).toBe(503);
+    expect((await app.inject({ url: "/healthz" })).statusCode).toBe(200);
+    await app.close();
+  });
+});
+
 describe("without a built web app", () => {
   it("fails fast when STATIC_DIR points at a missing build", async () => {
     const app = await makeApp({ staticDir: "/definitely/not/here" }).catch(

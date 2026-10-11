@@ -1,9 +1,9 @@
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildApp } from "../src/app";
-import type { DbHandle } from "../src/db/client";
-import { loadEnv } from "../src/env";
+import { buildApp } from "../../src/app";
+import { createDatabase, type Database } from "../../src/db/client";
+import { loadEnv } from "../../src/env";
 
 export const INDEX_HTML = `<!doctype html>
 <html lang="en">
@@ -26,20 +26,27 @@ export async function makeStaticDir(): Promise<string> {
   return dir;
 }
 
-export function fakeDb(reachable = true): DbHandle {
-  return {
-    ping: () => (reachable ? Promise.resolve() : Promise.reject(new Error("connection refused"))),
-    close: () => Promise.resolve(),
-  };
+/**
+ * A database object that never connects (the pool is lazy), with the probes replaceable, for tests
+ * that do not need a real Postgres.
+ */
+export function makeDatabase(overrides: Partial<Database> = {}): Database {
+  return { ...createDatabase("postgres://lib001:lib001@127.0.0.1:1/unused"), ...overrides };
 }
 
 interface AppOptions {
   publicUrl?: string;
   staticDir?: string;
   dbReachable?: boolean;
+  migrated?: boolean;
 }
 
-export async function makeApp({ publicUrl, staticDir, dbReachable }: AppOptions = {}) {
+export async function makeApp({
+  publicUrl,
+  staticDir,
+  dbReachable = true,
+  migrated = true,
+}: AppOptions = {}) {
   const env = loadEnv({
     DATABASE_URL: "postgres://lib001:lib001@localhost:5432/lib001",
     LOG_LEVEL: "silent",
@@ -47,7 +54,11 @@ export async function makeApp({ publicUrl, staticDir, dbReachable }: AppOptions 
     ...(publicUrl !== undefined && { PUBLIC_URL: publicUrl }),
     ...(staticDir !== undefined && { STATIC_DIR: staticDir }),
   });
-  const app = await buildApp({ env, db: fakeDb(dbReachable) });
+  const db = makeDatabase({
+    ping: () => (dbReachable ? Promise.resolve() : Promise.reject(new Error("connection refused"))),
+    migrationsApplied: () => Promise.resolve(migrated),
+  });
+  const app = await buildApp({ env, db, secret: "unit-test-secret-unit-test-secret-1234" });
   await app.ready();
   return app;
 }

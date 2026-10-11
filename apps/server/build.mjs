@@ -10,6 +10,8 @@ await build({
   entryPoints: {
     server: "src/server.ts",
     healthcheck: "src/healthcheck.ts",
+    migrate: "src/migrate.ts",
+    cli: "src/cli.ts",
   },
   outdir: "dist",
   bundle: true,

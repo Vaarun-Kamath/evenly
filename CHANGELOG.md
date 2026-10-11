@@ -7,6 +7,9 @@ and the project uses [Semantic Versioning](https://semver.org/) once it reaches 
 
 ### Added
 
+- Database (Drizzle, Postgres 18), migrations that run at startup under an advisory lock, and email-and-password
+  accounts (Better Auth): sign up, log in, log out, log out everywhere, profile (`/api/v1/me`), sign-up policy,
+  rate limits, Origin check, and a `reset-password` command.
 - `packages/core`: exact money parsing and formatting, the single allocation rule, the four split methods,
   net balances, simplified settlement plans and pairwise debts, with unit and property tests (100% coverage).
 - Project skeleton: pnpm workspace, Fastify server with `/healthz` and `/readyz`, React app,

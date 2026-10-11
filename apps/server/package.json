@@ -6,19 +6,29 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "drizzle"
   ],
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=../../.env src/server.ts",
     "build": "node build.mjs",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate": "tsx --env-file-if-exists=../../.env src/migrate.ts",
+    "cli": "tsx --env-file-if-exists=../../.env src/cli.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check",
+    "auth:generate": "pnpm dlx auth@1.7.7 generate --config better-auth.config.ts --output src/db/auth-schema.ts --yes",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration"
   },
   "devDependencies": {
     "@evenly/contracts": "workspace:*",
     "@evenly/core": "workspace:*",
     "@types/node": "^24.19.2",
+    "@types/nodemailer": "^8.0.2",
+    "drizzle-kit": "~0.31.11",
     "esbuild": "^0.28.2",
     "pino-pretty": "^13.2.0",
     "tsx": "^4.23.15",
@@ -29,8 +39,12 @@
     "@fastify/helmet": "^13.1.2",
     "@fastify/static": "^10.1.6",
     "@fastify/type-provider-zod": "^1.0.0",
+    "better-auth": "^1.7.7",
+    "drizzle-orm": "~0.45.4",
     "fastify": "^5.12.5",
+    "nodemailer": "^10.1.0",
     "postgres": "^3.4.9",
+    "uuid": "^14.0.3",
     "zod": "^4.6.5"
   }
 }

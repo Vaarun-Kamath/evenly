@@ -5,3 +5,5 @@ pnpm-lock.yaml
 LICENSE
 docs/PLATFORM.md
 docs/lib-001-split
+apps/server/src/db/auth-schema.ts
+apps/server/drizzle

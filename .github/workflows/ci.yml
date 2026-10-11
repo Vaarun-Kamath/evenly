@@ -16,6 +16,23 @@ jobs:
   check:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
+    services:
+      # A real Postgres for the integration tests (each test file gets its own database).
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: lib001
+          POSTGRES_PASSWORD: lib001
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lib001"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://lib001:lib001@localhost:5432/postgres
     steps:
       - uses: actions/checkout@v7
       # pnpm's version comes from the "packageManager" field in package.json.

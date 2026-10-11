@@ -1,6 +1,9 @@
 import { buildApp } from "./app";
-import { createDb } from "./db/client";
+import { createDatabase } from "./db/client";
+import { runMigrations } from "./db/migrate";
+import { getOrCreateSessionSecret } from "./db/secret";
 import { EnvError, loadEnv } from "./env";
+import { createMailer } from "./mail/mailer";
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
@@ -13,8 +16,17 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const db = createDb(env.DATABASE_URL);
-  const app = await buildApp({ env, db });
+  // Migrations run before the server accepts requests, one replica at a time (advisory lock).
+  await runMigrations(env.MIGRATION_DATABASE_URL ?? env.DATABASE_URL, {
+    log: (message) => console.log(`migrate: ${message}`),
+  });
+
+  const db = createDatabase(env.DATABASE_URL);
+  const secret = env.SESSION_SECRET ?? (await getOrCreateSessionSecret(db.orm));
+  const app = await buildApp({ env, db, secret, mailer: createMailer(env) });
+  if (env.SESSION_SECRET === undefined) {
+    app.log.info("SESSION_SECRET is not set; using the secret this instance generated and stored.");
+  }
 
   let shuttingDown = false;
   const shutdown = async (signal: string): Promise<void> => {

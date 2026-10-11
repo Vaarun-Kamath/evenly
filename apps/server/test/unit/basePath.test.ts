@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveBasePath, normalizeBasePath } from "../src/basePath";
+import { deriveBasePath, normalizeBasePath } from "../../src/basePath";
 
 describe("normalizeBasePath", () => {
   it.each([

@@ -33,7 +33,8 @@ pnpm install
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db   # Postgres on localhost:5432
 cp .env.example .env
 pnpm dev          # API on :3000, web app on :5173 (proxies /api)
-pnpm check        # lint, format check, typecheck, tests
+pnpm check        # lint, format check, typecheck, tests (the server's integration tests need the
+                  # Postgres above; they create and drop their own databases)
 ./scripts/smoke.sh  # builds the Docker image and checks it at / and /evenly
 ```
 

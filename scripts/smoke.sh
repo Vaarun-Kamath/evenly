@@ -43,6 +43,32 @@ for base in "" "/evenly"; do
     check "http://localhost:${APP_PORT}/healthz" 404
   fi
 
+  # Sign up, then use the session cookie on a protected route. This exercises the migrations that ran
+  # at startup, the auth library under the base path, the cookie Path, and the Origin check.
+  jar="$(mktemp)"
+  email="smoke-${RANDOM}${RANDOM}@example.com"
+  origin="http://localhost:${APP_PORT}"
+  signup="{\"email\":\"$email\",\"name\":\"Smoke\",\"password\":\"correct horse battery staple\"}"
+  post() {
+    local url="$1" expect_status="$2" payload="$3" origin_header="$4" status
+    status="$(curl -sS -o /dev/null -w '%{http_code}' -c "$jar" -b "$jar" -X POST "$url" \
+      -H 'Content-Type: application/json' -H "Origin: $origin_header" -d "$payload")" || fail "curl $url"
+    [[ "$status" == "$expect_status" ]] || fail "POST $url returned $status, expected $expect_status"
+    echo "ok  POST $url -> $status"
+  }
+  post "$PUBLIC_URL/api/auth/sign-up/email" 403 "$signup" "http://evil.example"
+  post "$PUBLIC_URL/api/auth/sign-up/email" 200 "$signup" "$origin"
+  status="$(curl -sS -o /dev/null -w '%{http_code}' -b "$jar" "$PUBLIC_URL/api/v1/me")"
+  [[ "$status" == "200" ]] || fail "GET $PUBLIC_URL/api/v1/me with the session returned $status, expected 200"
+  echo "ok  $PUBLIC_URL/api/v1/me with the session cookie -> $status"
+  check "$PUBLIC_URL/api/v1/me" 401
+  rm -f "$jar"
+
+  # The administrator's password reset command, from the built image.
+  link="$(docker compose -p "$project" exec -T app node dist/cli.js reset-password "$email" | grep -o 'http[^ ]*/reset?token=[^ ]*' || true)"
+  [[ "$link" == "$PUBLIC_URL/reset?token="* ]] || fail "reset-password printed an unexpected link: $link"
+  echo "ok  reset-password prints a link under $PUBLIC_URL"
+
   asset="$(curl -sS "$PUBLIC_URL/" | grep -o 'assets/[^"]*\.js' | head -1)"
   [[ -n "$asset" ]] || fail "no script asset found in index.html"
   check "$PUBLIC_URL/$asset" 200

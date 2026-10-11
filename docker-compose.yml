@@ -31,7 +31,13 @@ services:
       PORT: "3000"
       LOG_LEVEL: ${LOG_LEVEL:-info}
       TRUST_PROXY: ${TRUST_PROXY:-false}
+      # Optional. When empty the app generates a secret on first start and keeps it in the database.
       SESSION_SECRET: ${SESSION_SECRET:-}
+      ALLOW_SIGNUPS: ${ALLOW_SIGNUPS:-true}
+      TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-}
+      # Optional email (password reset by email). SMTP_FROM is required when SMTP_URL is set.
+      SMTP_URL: ${SMTP_URL:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     ports:
       - "${APP_PORT:-3000}:3000"
 

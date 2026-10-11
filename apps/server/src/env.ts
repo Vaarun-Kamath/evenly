@@ -36,7 +36,30 @@ function parseTrustProxy(value: string): boolean | number | string[] {
   return entries;
 }
 
-const envSchema = z.object({
+/** Comma-separated list of origins ("https://a.example, https://b.example"), normalised. */
+function parseOrigins(value: string, ctx: z.core.$RefinementCtx<string>): string[] {
+  const origins: string[] = [];
+  for (const entry of value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "")) {
+    try {
+      const url = new URL(entry);
+      if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("not http(s)");
+      origins.push(url.origin);
+    } catch {
+      ctx.issues.push({
+        code: "custom",
+        message: `"${entry}" is not a valid origin`,
+        input: value,
+      });
+      return z.NEVER;
+    }
+  }
+  return origins;
+}
+
+const baseEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   HOST: z.string().default("0.0.0.0"),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
@@ -60,12 +83,23 @@ const envSchema = z.object({
         return z.NEVER;
       }
     }),
+  MIGRATION_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
+  ALLOW_SIGNUPS: z.enum(["true", "false", "invite-only"]).default("true"),
+  TRUSTED_ORIGINS: z.string().default("").transform(parseOrigins),
   STATIC_DIR: z.string().optional(),
   SMTP_URL: z.string().optional(),
   SMTP_FROM: z.string().optional(),
 });
 
-export type Env = z.output<typeof envSchema> & {
+const envSchema = baseEnvSchema.refine(
+  (env) => env.SMTP_URL === undefined || env.SMTP_FROM !== undefined,
+  {
+    message: "SMTP_FROM is required when SMTP_URL is set",
+    path: ["SMTP_FROM"],
+  },
+);
+
+export type Env = z.output<typeof baseEnvSchema> & {
   /** `""` at the site root, otherwise `/evenly`-style: no trailing slash. */
   basePath: string;
   publicOrigin: string;
