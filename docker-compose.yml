@@ -1,0 +1,39 @@
+# Self-hosting and local trial: `docker compose up` serves Evenly at http://localhost:3000.
+# Settings can go in a `.env` file next to this one (see .env.example).
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lib001
+      POSTGRES_DB: lib001
+      # Only reachable from the app container (the port is not published). Keep it URL-safe.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lib001}
+    volumes:
+      # Postgres 18 images keep data in a versioned subdirectory of /var/lib/postgresql.
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lib001 -d lib001"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://lib001:${POSTGRES_PASSWORD:-lib001}@db:5432/lib001
+      # If you change the published port or put the app behind a domain, set PUBLIC_URL to match.
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3000}
+      PORT: "3000"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+
+volumes:
+  db-data:

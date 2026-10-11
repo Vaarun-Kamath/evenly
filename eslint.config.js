@@ -1,0 +1,37 @@
+import js from "@eslint/js";
+import { defineConfig } from "eslint/config";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+
+export default defineConfig(
+  { ignores: ["**/dist/**", "**/node_modules/**", "**/coverage/**", "docs/**"] },
+  js.configs.recommended,
+  {
+    files: ["**/*.{ts,tsx}"],
+    extends: [tseslint.configs.recommendedTypeChecked, tseslint.configs.stylisticTypeChecked],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: {
+      // A bare `any` needs an eslint-disable comment that says why (see BUILD_PLAN "Definition of done").
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    },
+  },
+  {
+    files: ["apps/server/**/*.ts", "packages/**/*.ts", "**/*.{js,mjs}"],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    files: ["apps/web/**/*.{ts,tsx}"],
+    extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
+    languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ["**/*.{js,mjs}"],
+    extends: [tseslint.configs.disableTypeChecked],
+  },
+);

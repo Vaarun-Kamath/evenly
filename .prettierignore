@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+LICENSE
+docs/PLATFORM.md
+docs/lib-001-split
