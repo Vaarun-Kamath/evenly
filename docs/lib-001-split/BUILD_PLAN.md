@@ -18,12 +18,12 @@ commits on `main` if you're working alone). Check items off in this file as you 
 **Done when** a fresh clone followed by `docker compose up` gives a page, and CI is green.
 
 ## M1: Core money logic (`packages/core`), no I/O
-- [ ] Money parsing and formatting using currency exponents; `assertSafeInteger`.
-- [ ] `allocate()` exactly as in ARCHITECTURE.md §5.2.
-- [ ] Split calculators: equal, exact, percent, shares, with typed validation errors.
-- [ ] `computeNets()`, `simplify()`, `pairwise()` (§5.3–5.5).
-- [ ] Static ISO 4217 exponent table plus a test against `Intl`; amount cap of 10^12 minor units (ADR-0004).
-- [ ] Unit tests and **all** the property tests in §5.6; 100% branch coverage on `packages/core`.
+- [x] Money parsing and formatting using currency exponents; `assertSafeInteger`.
+- [x] `allocate()` exactly as in ARCHITECTURE.md §5.2.
+- [x] Split calculators: equal, exact, percent, shares, with typed validation errors (plus payer and settlement validation, ADR-0006).
+- [x] `computeNets()`, `simplify()`, `pairwise()` (§5.3–5.5).
+- [x] Static ISO 4217 exponent table plus a test against `Intl`; amount cap of 10^12 minor units (ADR-0004).
+- [x] Unit tests and **all** the property tests in §5.6; 100% branch coverage on `packages/core` (enforced by `pnpm test`; 10k runs per property, `FAST_CHECK_RUNS` lowers it locally).
 
 **Done when** the property tests pass with 10k runs each, and SPEC.md scenarios 2–4 pass as unit tests.
 

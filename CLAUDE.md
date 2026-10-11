@@ -9,7 +9,7 @@ Software" initiative; this repo lives at `liberated-split/evenly` next to other 
 - `docs/PLATFORM.md`: conventions shared by all Liberated Software projects.
 - `docs/lib-001-split/SPEC.md`: what to build. `ARCHITECTURE.md`: how. `BUILD_PLAN.md`: milestones M0 to M6.
 - `docs/adr/`: decisions that deviate from or fill gaps in those docs. **An ADR wins over the older docs.**
-  Read all of them (0001 to 0005) before changing the stack, auth, base path, membership or money details.
+  Read all of them (0001 to 0006) before changing the stack, auth, base path, membership or money details.
 - The portfolio repo (`../../Portfolio`) is the master copy of the handoff docs. Never modify it from here.
 
 ## Status
@@ -23,7 +23,7 @@ for the owner: what works, how to run it, what is next, decisions needed.
 ```
 apps/server     Fastify 5 API; also serves the built web app (src/spa.ts). Bundled by esbuild (build.mjs).
 apps/web        React 19 + Vite + TanStack Router/Query + Tailwind 4.
-packages/core   Pure money/split/balance logic. No I/O, no runtime dependencies. 100% branch coverage.
+packages/core   Pure money/split/balance logic. No I/O, no runtime dependencies. 100% coverage enforced by `pnpm test`.
 packages/contracts  zod schemas + types shared by server and web.
 ```
 
@@ -52,6 +52,10 @@ pnpm build
 - Every write goes through a service in one transaction that also inserts its activity row.
 - No `any` without a comment saying why. No telemetry, no phone-home.
 - Library choices were checked on 2026-10-11 (ADR-0001). Check current docs before adopting anything new.
+- `packages/core` API (ADR-0006): `computeSplit` (all four methods), `validatePayers`, `computeNets`, `simplify`,
+  `pairwise`, `allocate`, money parse/format. Rejections are `CoreError` with a stable `code`. Use these from the
+  server and the web form; never re-implement money maths elsewhere. Property tests run 10k cases each
+  (`FAST_CHECK_RUNS=500 pnpm --filter @evenly/core test` for a quick loop).
 
 ## Environment gotchas
 

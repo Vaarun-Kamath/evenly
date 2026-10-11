@@ -1,3 +1,9 @@
-// Money, allocation, split, balance, simplify and pairwise logic arrives in M1
-// (docs/lib-001-split/BUILD_PLAN.md). This package must stay free of I/O and dependencies.
-export {};
+export * from "./allocate";
+export * from "./balances";
+export * from "./currency";
+export * from "./errors";
+export * from "./money";
+export * from "./pairwise";
+export * from "./payers";
+export * from "./simplify";
+export * from "./splits";
