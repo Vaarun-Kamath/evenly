@@ -13,7 +13,7 @@ commits on `main` if you're working alone). Check items off in this file as you 
 - [x] Vite + React app served by Fastify in production; Vite dev server proxies `/api` in development.
 - [x] `Dockerfile` and `docker-compose.yml`; `docker compose up` serves a "hello" page on :3000.
 - [x] `BASE_PATH` support from day one (PLATFORM.md §9): the hello page and `/healthz` work at both `/` and `/evenly`.
-- [ ] CI: lint, typecheck, test, docker build. (Workflow written, and `scripts/smoke.sh` passes locally; tick this when the first run on GitHub is green.)
+- [x] CI: lint, typecheck, test, docker build. (First green run on GitHub: both jobs, including the smoke test at `/` and `/evenly`.)
 
 **Done when** a fresh clone followed by `docker compose up` gives a page, and CI is green.
 
