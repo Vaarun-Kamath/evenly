@@ -47,7 +47,8 @@ export function SplitEditor({ state, onChange, members, allMembers, computed, cu
     });
 
   return (
-    <fieldset className="flex flex-col gap-3">
+    // A fieldset will not shrink below its content by default (min-width: min-content), which pushed the rows out of the card.
+    <fieldset className="flex min-w-0 flex-col gap-3">
       <legend className="mb-1 text-sm font-medium">Split between</legend>
 
       <div
@@ -95,7 +96,7 @@ export function SplitEditor({ state, onChange, members, allMembers, computed, cu
           return (
             <li
               key={m.id}
-              className="flex items-center gap-3 rounded-xl border border-line px-3 py-2"
+              className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line px-3 py-2"
             >
               <input
                 id={`${inputId}-on`}
@@ -105,7 +106,7 @@ export function SplitEditor({ state, onChange, members, allMembers, computed, cu
                 disabled={left}
                 onChange={(e) => set({ included: { ...state.included, [m.id]: e.target.checked } })}
               />
-              <label htmlFor={`${inputId}-on`} className="min-w-0 flex-1 truncate text-sm">
+              <label htmlFor={`${inputId}-on`} className="min-w-0 flex-1 basis-24 truncate text-sm">
                 {nameOf(allMembers, m.id)}
                 {m.isYou && <span className="text-muted"> (you)</span>}
               </label>
@@ -121,7 +122,7 @@ export function SplitEditor({ state, onChange, members, allMembers, computed, cu
                     disabled={left}
                     value={state.values[m.id] ?? ""}
                     onChange={(e) => set({ values: { ...state.values, [m.id]: e.target.value } })}
-                    className="min-h-10 w-24 rounded-lg border border-line bg-surface px-2 text-right text-sm"
+                    className="min-h-10 w-20 rounded-lg border border-line bg-surface px-2 text-right text-sm"
                     placeholder={
                       state.method === "exact" ? "0.00" : state.method === "percent" ? "%" : "1"
                     }
@@ -129,7 +130,7 @@ export function SplitEditor({ state, onChange, members, allMembers, computed, cu
                 </>
               )}
               <span
-                className="w-24 shrink-0 text-right text-sm tabular-nums text-muted"
+                className="ml-auto w-24 shrink-0 text-right text-sm tabular-nums text-muted"
                 aria-label={`${m.displayName}'s share`}
               >
                 {share.has(m.id) ? money(share.get(m.id) ?? 0, currency) : "–"}

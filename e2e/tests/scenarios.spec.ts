@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { basePath, origin } from "./env";
@@ -281,10 +282,19 @@ test.describe.serial(`acceptance scenarios (base path "${basePath}")`, () => {
   });
 
   test("9. the CSV export's totals match the balances in the app", async () => {
+    // Download it the way a person does, from the settings screen.
+    await asha.page.goto(`g/${gid}/settings`);
+    const [download] = await Promise.all([
+      asha.page.waitForEvent("download"),
+      asha.page.getByRole("link", { name: "Download CSV" }).click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/\.csv$/);
+    const text = readFileSync((await download.path()) ?? "", "utf8");
+    expect(text.charCodeAt(0), "starts with a byte order mark, for Excel").toBe(0xfeff);
     const response = await asha.context.request.get(`api/v1/groups/${gid}/export.csv`);
-    expect(response.status()).toBe(200);
     expect(response.headers()["content-type"]).toMatch(/text\/csv/);
-    const rows = parseCsv(stripBom(await response.text()));
+    expect(text).toBe(await response.text());
+    const rows = parseCsv(stripBom(text));
 
     const header = rows[0] ?? [];
     expect(header.slice(0, 5)).toEqual(["Type", "Date", "Description", "Category", "Amount"]);
@@ -445,7 +455,15 @@ test.describe.serial(`acceptance scenarios (base path "${basePath}")`, () => {
   });
 
   test("phones: no screen needs sideways scrolling at 375px", async () => {
-    await asha.page.setViewportSize({ width: 375, height: 812 });
+    const { page } = asha;
+    await page.setViewportSize({ width: 375, height: 812 });
+    const noSidewaysScroll = async (what: string) => {
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      expect(overflow, `horizontal overflow on ${what}`).toBeLessThanOrEqual(0);
+    };
+
     const paths = [
       "",
       "groups/new",
@@ -457,13 +475,21 @@ test.describe.serial(`acceptance scenarios (base path "${basePath}")`, () => {
       "account",
     ];
     for (const path of paths) {
-      await asha.page.goto(path);
-      await expect(asha.page.locator("main")).toBeVisible();
-      await asha.page.waitForLoadState("networkidle");
-      const overflow = await asha.page.evaluate(
-        () => document.documentElement.scrollWidth - window.innerWidth,
-      );
-      expect(overflow, `horizontal overflow on /${path}`).toBeLessThanOrEqual(0);
+      await page.goto(path);
+      await expect(page.locator("main")).toBeVisible();
+      await page.waitForLoadState("networkidle");
+      await noSidewaysScroll(`/${path}`);
     }
+
+    // The expense form is the widest screen: each split method puts an input beside every person,
+    // and several payers put an amount beside every payer.
+    await page.goto(`g/${gid}/expenses/new`);
+    await page.getByLabel("Amount (INR)").fill("1200");
+    for (const method of ["Exact", "Percent", "Shares", "Equally"]) {
+      await page.locator("label", { hasText: new RegExp(`^${method}$`) }).click();
+      await noSidewaysScroll(`the expense form, split ${method}`);
+    }
+    await page.getByLabel("Several people paid").check();
+    await noSidewaysScroll("the expense form, several payers");
   });
 });

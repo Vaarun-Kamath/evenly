@@ -25,13 +25,36 @@ import {
   SelectField,
   TextField,
 } from "../../components/ui";
-import { api, errorMessage } from "../../lib/api";
+import { buttonClass } from "../../components/styles";
+import { api, basePath, errorMessage } from "../../lib/api";
+import { withBasePath } from "../../lib/basePath";
 import { formatDateTime, money } from "../../lib/format";
 import { useGid, useRefreshGroup } from "../../lib/hooks";
 import { configQuery, groupQuery, invitesQuery, membersQuery } from "../../lib/queries";
 import { useToast } from "../../lib/toast";
 
 const ROLE_LABEL = { owner: "Owner", admin: "Admin", member: "Member" } as const;
+
+/* ------------------------------------------------------------------- export */
+
+function Export({ group }: { group: Group }) {
+  return (
+    <Card as="section" className="flex flex-col gap-3">
+      <h2 className="text-lg font-semibold">Export</h2>
+      <p className="text-sm text-muted">
+        Every expense and payment with each person’s share, and a summary of the balances, as a
+        spreadsheet file (CSV).
+      </p>
+      <a
+        className={buttonClass("secondary", "self-start")}
+        href={withBasePath(basePath, `/api/v1/groups/${group.id}/export.csv`)}
+        download
+      >
+        Download CSV
+      </a>
+    </Card>
+  );
+}
 
 /* ------------------------------------------------------------ group details */
 
@@ -669,6 +692,7 @@ export function SettingsPage() {
         <Details group={group.data} />
         <Members group={group.data} members={members.data} />
         <Invites group={group.data} emailEnabled={config.data?.emailEnabled === true} />
+        <Export group={group.data} />
         <DeleteGroup group={group.data} />
       </div>
     </>

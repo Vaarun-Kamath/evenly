@@ -67,10 +67,11 @@ commits on `main` if you're working alone). Check items off in this file as you 
 - [x] Playwright: SPEC.md scenarios 1–10 against the built Docker image, at `BASE_PATH=/` and `BASE_PATH=/evenly` (the app serves the prefix itself, ADR-0002, so no stripping proxy is needed), including a reload on a deep link such as `/evenly/g/<id>/settle`. (`scripts/e2e.sh`; also axe-core on every main screen and a 375px overflow check. ADR-0010.)
 
 ## M6: Release
-- [ ] README: screenshots, features, a "Self-host in 2 minutes" section (`docker compose up`), configuration table, an honest comparison with commercial alternatives, roadmap.
-- [ ] `release.yml` → multi-arch image on GHCR; tag `v0.1.0`.
+- [x] README: screenshots, features, a "Self-host in 2 minutes" section (`docker compose up`), configuration table, an honest comparison with commercial alternatives, roadmap.
+- [ ] `release.yml` → multi-arch image on GHCR; tag `v0.1.0`. (The workflow is written; it runs when the tag is pushed.)
 - [ ] Deploy to the hosted instance (PLATFORM.md §5): create the `lib001` database and role, set the environment variables, point the domain at it.
-- [ ] Back up the hosted database and test a restore.
+- [ ] Back up the hosted database and test a restore. (The procedure is in the README and is tested on a throwaway stack by
+      `scripts/backup-restore-test.sh`, which CI runs; what remains is doing it on the hosted instance.)
 - [ ] Tell the portfolio owner the repo URL, version and upstream URL, so the portfolio can add the `/evenly`
       rewrite and update `content/liberated/lib-001.json`. (That change is made in the portfolio repo, not this one.)
 

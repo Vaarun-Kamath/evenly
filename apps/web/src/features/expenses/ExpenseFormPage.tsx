@@ -268,7 +268,7 @@ function ExpenseForm({
         </Card>
 
         <Card className="flex flex-col gap-3">
-          <fieldset className="flex flex-col gap-3">
+          <fieldset className="flex min-w-0 flex-col gap-3">
             <legend className={state.payerMode === "one" ? "sr-only" : "mb-1 text-sm font-medium"}>
               {state.payerMode === "one" ? "Paid by" : "Who paid, and how much each"}
             </legend>

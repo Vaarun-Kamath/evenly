@@ -12,6 +12,9 @@ and the project uses [Semantic Versioning](https://semver.org/) once it reaches 
   (the simplified plan, or the pairwise debts when simplify is off); group settings (people, roles, invitation links,
   claim links for placeholders); the invitation landing page; account settings. Mobile-first, keyboard-friendly, light
   and dark, self-hosted fonts.
+- A "Download CSV" button in the group settings, a release workflow that publishes a multi-architecture image to the
+  GitHub Container Registry when a version tag is pushed, and `scripts/backup-restore-test.sh` (dump, drop, restore,
+  compare) which CI runs.
 - End-to-end tests (Playwright, `scripts/e2e.sh`): SPEC.md scenarios 1 to 10 against the built image at `/` and
   `/evenly`, a reload on a deep link, a keyboard and focus check, an axe-core accessibility check and a 375px overflow
   check; a CI job runs them.

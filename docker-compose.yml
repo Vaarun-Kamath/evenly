@@ -19,6 +19,9 @@ services:
       retries: 10
 
   app:
+    # The published image when there is one (EVENLY_VERSION=0.1.0 pins a release); otherwise it is built from this
+    # checkout, which is also what CI and `docker compose up --build` do.
+    image: ghcr.io/vaarun-kamath/evenly:${EVENLY_VERSION:-latest}
     build: .
     restart: unless-stopped
     depends_on:
