@@ -134,7 +134,7 @@ describe("invites", () => {
       const third = (await createInvite(owner, {}, g.id)).json<CreatedInvite>();
       await h.as(owner).delete(`/groups/${g.id}/invites/${third.id}`);
       await h.db
-        .sql`update group_invites set expires_at = now() - interval '1 minute' where id = ${second.id}`;
+        .sql`update group_invites set expires_at = now() - interval '1 hour' where id = ${second.id}`;
       await accept(await h.signUp(), tokenOf(first));
 
       const listed = (await h.as(owner).get(`/groups/${g.id}/invites`)).json<Invite[]>();
@@ -218,7 +218,7 @@ describe("invites", () => {
 
       const expired = (await createInvite(owner, {}, g.id)).json<CreatedInvite>();
       await h.db
-        .sql`update group_invites set expires_at = now() - interval '1 second' where id = ${expired.id}`;
+        .sql`update group_invites set expires_at = now() - interval '1 hour' where id = ${expired.id}`;
       const expiredResponse = await preview(tokenOf(expired));
       expect(expiredResponse.statusCode).toBe(410);
       expect(problemType(expiredResponse)).toBe("urn:evenly:problem:invite-expired");
@@ -316,7 +316,7 @@ describe("invites", () => {
     it("refuses an expired link", async () => {
       const invite = (await createInvite(owner)).json<CreatedInvite>();
       await h.db
-        .sql`update group_invites set expires_at = now() - interval '1 second' where id = ${invite.id}`;
+        .sql`update group_invites set expires_at = now() - interval '1 hour' where id = ${invite.id}`;
       const response = await accept(await h.signUp(), tokenOf(invite));
       expect(response.statusCode).toBe(410);
       expect(problemType(response)).toBe("urn:evenly:problem:invite-expired");
@@ -492,7 +492,7 @@ describe("invites", () => {
         const expired = await make({});
         await closed.as(founder).delete(`/groups/${g.id}/invites/${revoked.id}`);
         await closed.db
-          .sql`update group_invites set expires_at = now() - interval '1 second' where id = ${expired.id}`;
+          .sql`update group_invites set expires_at = now() - interval '1 hour' where id = ${expired.id}`;
 
         const signUp = (invite: CreatedInvite | null, email = uniqueEmail()) =>
           closed.request({

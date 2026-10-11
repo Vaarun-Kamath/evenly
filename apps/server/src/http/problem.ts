@@ -9,10 +9,16 @@ export class ProblemError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
-    options?: ErrorOptions,
+    options?: ErrorOptions & {
+      /** Extra members of the problem body (for example the `current` row of a version conflict). */
+      extensions?: Record<string, unknown>;
+    },
   ) {
     super(message, options);
+    this.extensions = options?.extensions;
   }
+
+  readonly extensions: Record<string, unknown> | undefined;
 }
 
 /** The one answer for "no such group, or you are not in it": group ids must not be probeable. */

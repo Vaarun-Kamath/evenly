@@ -16,3 +16,6 @@ export const problemSchema = z.object({
     .optional(),
 });
 export type Problem = z.infer<typeof problemSchema>;
+
+/** The 409 answer to an edit that started from an old version: the problem, plus the current row. */
+export const versionConflictSchema = problemSchema.extend({ current: z.unknown() });

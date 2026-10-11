@@ -1,5 +1,5 @@
 import type { MeResponse, UpdateMeRequest } from "@evenly/contracts";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { user } from "../../db/auth-schema";
 import type { Orm } from "../../db/client";
 import { groupMembers, groups } from "../../db/schema";
@@ -97,7 +97,7 @@ export async function deleteAccount(orm: Orm, actor: Actor): Promise<void> {
       );
     }
 
-    const now = new Date();
+    const now = sql`now()`;
     for (const { member, group } of active) {
       await recordActivity(tx, {
         groupId: group.id,

@@ -15,11 +15,15 @@ import { registerErrorHandling, sendProblem } from "./http/errors";
 import { originGuard } from "./http/origin";
 import type { Mailer } from "./mail/mailer";
 import { registerActivityRoutes } from "./modules/activity/routes";
+import { registerBalanceRoutes } from "./modules/balances/routes";
+import { registerExpenseRoutes } from "./modules/expenses/routes";
+import { registerExportRoutes } from "./modules/export/routes";
 import { registerGroupRoutes } from "./modules/groups/routes";
 import { registerInviteRoutes, registerPublicInviteRoutes } from "./modules/invites/routes";
 import { inviteAllowsSignup } from "./modules/invites/service";
 import { registerMemberRoutes } from "./modules/members/routes";
 import { registerMeRoutes } from "./modules/me/routes";
+import { registerSettlementRoutes } from "./modules/settlements/routes";
 import { isSpaRoute, loadSpa, registerSpaRoutes, resolveStaticDir, sendIndex } from "./spa";
 
 export interface AppDeps {
@@ -158,6 +162,10 @@ export async function buildApp({
             registerMemberRoutes(authed, db.orm);
             registerInviteRoutes(authed, invites);
             registerActivityRoutes(authed, db.orm);
+            registerExpenseRoutes(authed, db.orm);
+            registerSettlementRoutes(authed, db.orm);
+            registerBalanceRoutes(authed, db.orm);
+            registerExportRoutes(authed, db.orm);
             done();
           });
         },

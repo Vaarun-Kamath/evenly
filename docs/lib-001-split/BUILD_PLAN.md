@@ -50,13 +50,13 @@ commits on `main` if you're working alone). Check items off in this file as you 
 - [x] Activity rows for every change (and `GET /groups/:gid/activity`).
 
 ## M4: Expenses, settlements, balances
-- [ ] Expense create (idempotent via client `id`), read, list with filters and cursor, update with `version`, soft delete and restore.
-- [ ] Settlements, with the same behaviour.
-- [ ] `GET /balances` → nets, simplified plan, pairwise.
-- [ ] `GET /me/overview`: totals and cross-group per-person nets (always pairwise, ADR-0004).
-- [ ] Idempotent create rules (ADR-0003 point 6).
-- [ ] CSV export (streamed): BOM, decimal amounts by exponent, formula-injection escaping (ADR-0004).
-- [ ] Integration tests for SPEC.md scenarios 2–4 and 6–9 at the API level.
+- [x] Expense create (idempotent via client `id`), read, list with filters and cursor, update with `version`, soft delete and restore.
+- [x] Settlements, with the same behaviour.
+- [x] `GET /balances` → nets, simplified plan, pairwise (and `suggested`, the plan the settle-up screen offers).
+- [x] `GET /me/overview`: totals and cross-group per-person nets (always pairwise, ADR-0004).
+- [x] Idempotent create rules (ADR-0003 point 6).
+- [x] CSV export (streamed): BOM, decimal amounts by exponent, formula-injection escaping (ADR-0004, ADR-0009).
+- [x] Integration tests for SPEC.md scenarios 2–4 and 6–9 at the API level (`scenarios.test.ts` plays 1 to 10 as one story).
 
 ## M5: Web UI
 - [ ] Auth pages, dashboard, create group, group page (expenses + balances), add/edit expense with the live split preview,

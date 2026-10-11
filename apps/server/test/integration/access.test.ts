@@ -8,6 +8,27 @@ import { createGroup, memberIdOf, seedMember } from "./groupHelpers";
  * that can make it answer 404 is "you are not in this group". Add new group routes here: the
  * completeness test below fails if one is missing.
  */
+// Valid in shape (a real member id is filled in for MEMBER), so that only "not in this group" can fail.
+const MEMBER = "00000000-0000-4000-8000-000000000001";
+const EXPENSE_BODY = {
+  id: "0192f0c4-0000-7000-8000-000000000001",
+  description: "Dinner",
+  amountMinor: 1000,
+  currency: "INR",
+  category: "food",
+  expenseDate: "2026-10-10",
+  payers: [{ memberId: MEMBER, amountMinor: 1000 }],
+  split: { method: "equal", entries: [{ memberId: MEMBER }] },
+};
+const SETTLEMENT_BODY = {
+  id: "0192f0c4-0000-7000-8000-000000000002",
+  fromMemberId: MEMBER,
+  toMemberId: "00000000-0000-4000-8000-000000000002",
+  amountMinor: 100,
+  currency: "INR",
+  settledOn: "2026-10-11",
+};
+
 const GROUP_ROUTES: { method: string; url: string; body?: object }[] = [
   { method: "GET", url: "/groups/:gid" },
   { method: "PATCH", url: "/groups/:gid", body: { name: "Hijacked" } },
@@ -22,6 +43,28 @@ const GROUP_ROUTES: { method: string; url: string; body?: object }[] = [
   { method: "POST", url: "/groups/:gid/invites", body: {} },
   { method: "DELETE", url: "/groups/:gid/invites/:iid" },
   { method: "GET", url: "/groups/:gid/activity" },
+  { method: "GET", url: "/groups/:gid/balances" },
+  { method: "GET", url: "/groups/:gid/export.csv" },
+  { method: "GET", url: "/groups/:gid/expenses" },
+  { method: "POST", url: "/groups/:gid/expenses", body: EXPENSE_BODY },
+  { method: "GET", url: "/groups/:gid/expenses/:eid" },
+  {
+    method: "PATCH",
+    url: "/groups/:gid/expenses/:eid",
+    body: { ...EXPENSE_BODY, id: undefined, version: 1 },
+  },
+  { method: "DELETE", url: "/groups/:gid/expenses/:eid" },
+  { method: "POST", url: "/groups/:gid/expenses/:eid/restore" },
+  { method: "GET", url: "/groups/:gid/settlements" },
+  { method: "POST", url: "/groups/:gid/settlements", body: SETTLEMENT_BODY },
+  { method: "GET", url: "/groups/:gid/settlements/:sid" },
+  {
+    method: "PATCH",
+    url: "/groups/:gid/settlements/:sid",
+    body: { ...SETTLEMENT_BODY, id: undefined, version: 1 },
+  },
+  { method: "DELETE", url: "/groups/:gid/settlements/:sid" },
+  { method: "POST", url: "/groups/:gid/settlements/:sid/restore" },
 ];
 
 describe("a user who is not in a group", () => {
@@ -46,7 +89,7 @@ describe("a user who is not in a group", () => {
   });
 
   const fill = (url: string, gid = groupId) =>
-    `/api/v1${url.replace(":gid", gid).replace(":mid", memberId).replace(":iid", inviteId)}`;
+    `/api/v1${url.replace(":gid", gid).replace(":mid", memberId).replace(":iid", inviteId).replace(":eid", inviteId).replace(":sid", inviteId)}`;
   const call = (who: Session | null, route: (typeof GROUP_ROUTES)[number], gid = groupId) =>
     h.request({
       method: route.method as "GET",

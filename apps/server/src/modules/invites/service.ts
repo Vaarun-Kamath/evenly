@@ -159,7 +159,7 @@ export async function createInvite(
       // The link was never delivered and nobody else knows it: do not leave a live invite behind.
       await ctx.orm
         .update(groupInvites)
-        .set({ revokedAt: new Date() })
+        .set({ revokedAt: sql`now()` })
         .where(eq(groupInvites.id, inviteId));
       throw new ProblemError(502, "email-failed", "The invitation email could not be sent.", {
         cause: error,
@@ -222,7 +222,7 @@ export async function revokeInvite(
     if (invite.revokedAt !== null) return;
     await tx
       .update(groupInvites)
-      .set({ revokedAt: new Date() })
+      .set({ revokedAt: sql`now()` })
       .where(eq(groupInvites.id, inviteId));
     await recordActivity(tx, {
       groupId,

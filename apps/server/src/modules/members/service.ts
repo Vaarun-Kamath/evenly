@@ -1,6 +1,6 @@
 import type { AddPlaceholderRequest, Member, UpdateMemberRequest } from "@evenly/contracts";
 import { formatMinor } from "@evenly/core";
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import type { Orm } from "../../db/client";
 import { newId } from "../../db/ids";
 import { groupInvites, groupMembers } from "../../db/schema";
@@ -231,7 +231,7 @@ export async function removeMember(
       );
     }
 
-    const now = new Date();
+    const now = sql`now()`;
     await tx.update(groupMembers).set({ leftAt: now }).where(eq(groupMembers.id, target.id));
     // A link that would let someone claim this person no longer has anything to claim.
     await tx

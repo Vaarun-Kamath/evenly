@@ -7,6 +7,9 @@ and the project uses [Semantic Versioning](https://semver.org/) once it reaches 
 
 ### Added
 
+- Expenses and settlements: create (safe to retry), edit with optimistic locking, soft delete and restore, filtered and
+  paged lists; the four split methods; balances with a simplified plan and pairwise debts; an overview across groups;
+  a streamed CSV export whose totals match the balances.
 - Groups, members and invites: create, update, archive and delete groups; roles (owner, admin, member);
   placeholder members; invite links with expiry and use limits, email invitations, claiming a placeholder; leaving
   and removing people only at a zero balance; an activity feed; account deletion.

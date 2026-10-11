@@ -9,7 +9,7 @@ Software" initiative; this repo lives at `liberated-split/evenly` next to other 
 - `docs/PLATFORM.md`: conventions shared by all Liberated Software projects.
 - `docs/lib-001-split/SPEC.md`: what to build. `ARCHITECTURE.md`: how. `BUILD_PLAN.md`: milestones M0 to M6.
 - `docs/adr/`: decisions that deviate from or fill gaps in those docs. **An ADR wins over the older docs.**
-  Read all of them (0001 to 0008) before changing the stack, auth, base path, membership or money details.
+  Read all of them (0001 to 0009) before changing the stack, auth, base path, membership or money details.
 - The portfolio repo (`../../Portfolio`) is the master copy of the handoff docs. Never modify it from here.
 
 ## Status
@@ -29,9 +29,11 @@ packages/contracts  zod schemas + types shared by server and web.
 
 Server layout (`apps/server/src`): `db/` (Drizzle schema, migrations runner, client), `auth/` (Better Auth
 config, HTTP bridge, limiter), `http/` (errors, Origin guard), `modules/<feature>/{routes,service}.ts` (me, groups, members, invites,
-activity, balances, common), `cli/`, `mail/`. Services throw `ProblemError` (`http/problem.ts`); every group service
+activity, balances, expenses, settlements, export, ledger, common), `cli/`, `mail/`. Services throw `ProblemError` (`http/problem.ts`); every group service
 starts with `requireMember` (`modules/common/access.ts`) and writes inside one transaction that also calls
 `recordActivity`. A new group route must be added to the list in `test/integration/access.test.ts`.
+Money maths lives only in `@evenly/core`; the server calls `computeSplit`/`validatePayers`/`computeNets`/`simplify`/
+`pairwise`. Timestamps the app writes use `sql`now()`` (the database clock), not `new Date()` (ADR-0009).
 Migrations are SQL in `apps/server/drizzle/` (`pnpm --filter @evenly/server db:generate`; hand-written ones with
 `--custom`). `src/db/auth-schema.ts` is generated; do not edit it.
 

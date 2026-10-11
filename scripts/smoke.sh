@@ -71,6 +71,20 @@ for base in "" "/evenly"; do
   [[ "$invite_url" == "$PUBLIC_URL/invite/"* ]] || fail "unexpected invitation link: $invite_url"
   check "$PUBLIC_URL/api/v1/invites/${invite_url##*/invite/}" 200 '"name":"Smoke trip"'
   check "$PUBLIC_URL/api/v1/groups/$group_id" 401
+
+  # An expense, the balances it produces, and the CSV export.
+  member_id="$(json "$PUBLIC_URL/api/v1/groups/$group_id/members" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)"
+  expense_id="0192f0c4-0000-7000-8000-$(printf '%012d' "$RANDOM$RANDOM")"
+  expense="{\"id\":\"$expense_id\",\"description\":\"Smoke dinner\",\"amountMinor\":123456,\"currency\":\"INR\",\"expenseDate\":\"2026-10-10\",\"payers\":[{\"memberId\":\"$member_id\",\"amountMinor\":123456}],\"split\":{\"method\":\"equal\",\"entries\":[{\"memberId\":\"$member_id\"}]}}"
+  status="$(json -o /dev/null -w '%{http_code}' -d "$expense" "$PUBLIC_URL/api/v1/groups/$group_id/expenses")"
+  [[ "$status" == "201" ]] || fail "creating an expense returned $status, expected 201"
+  status="$(json -o /dev/null -w '%{http_code}' -d "$expense" "$PUBLIC_URL/api/v1/groups/$group_id/expenses")"
+  [[ "$status" == "200" ]] || fail "retrying the same expense returned $status, expected 200"
+  json "$PUBLIC_URL/api/v1/groups/$group_id/balances" | grep -q '"nets"' || fail "balances have no nets"
+  csv="$(json "$PUBLIC_URL/api/v1/groups/$group_id/export.csv")"
+  grep -q 'Smoke dinner' <<<"$csv" || fail "the CSV export does not contain the expense"
+  grep -q '1234.56' <<<"$csv" || fail "the CSV export does not contain the amount"
+  echo "ok  expense, retry, balances and CSV export"
   rm -f "$jar"
 
   # The administrator's password reset command, from the built image.

@@ -2,17 +2,21 @@ import { STATUS_CODES } from "node:http";
 import { hasZodFastifySchemaValidationErrors } from "@fastify/type-provider-zod";
 import type { Problem } from "@evenly/contracts";
 import type { FastifyInstance, FastifyReply } from "fastify";
+import { CoreError } from "@evenly/core";
 import { ProblemError } from "./problem";
 
 interface ProblemOptions {
   type?: string;
   detail?: string;
   errors?: Problem["errors"];
+  /** Extra members of the problem body. */
+  extensions?: Record<string, unknown>;
 }
 
 /** Sends an RFC 9457 `application/problem+json` response. */
 export function sendProblem(reply: FastifyReply, status: number, options: ProblemOptions = {}) {
-  const body: Problem = {
+  const body: Problem & Record<string, unknown> = {
+    ...options.extensions,
     type: options.type ?? "about:blank",
     title: STATUS_CODES[status] ?? "Error",
     status,
@@ -43,6 +47,15 @@ export function registerErrorHandling(app: FastifyInstance): void {
       return sendProblem(reply, error.status, {
         type: `urn:evenly:problem:${error.code}`,
         detail: error.message,
+        ...(error.extensions !== undefined && { extensions: error.extensions }),
+      });
+    }
+    if (error instanceof CoreError) {
+      // The money rules of @evenly/core (a split that does not add up, an unknown member, ...).
+      return sendProblem(reply, 422, {
+        type: `urn:evenly:problem:${error.code.toLowerCase().replaceAll("_", "-")}`,
+        detail: error.message,
+        extensions: { code: error.code },
       });
     }
     if (hasZodFastifySchemaValidationErrors(error)) {

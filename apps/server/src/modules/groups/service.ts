@@ -141,7 +141,7 @@ export async function updateGroup(
         ...(input.name !== undefined && { name: input.name }),
         ...(input.emoji !== undefined && { emoji: input.emoji }),
         ...(input.simplifyDebts !== undefined && { simplifyDebts: input.simplifyDebts }),
-        updatedAt: new Date(),
+        updatedAt: sql`now()`,
       })
       .where(eq(groups.id, groupId));
     await recordActivity(tx, {
@@ -169,7 +169,7 @@ export async function setArchived(
     if ((group.archivedAt !== null) === archived) return;
     await tx
       .update(groups)
-      .set({ archivedAt: archived ? new Date() : null, updatedAt: new Date() })
+      .set({ archivedAt: archived ? sql`now()` : null, updatedAt: sql`now()` })
       .where(eq(groups.id, groupId));
     await recordActivity(tx, {
       groupId,
@@ -194,7 +194,7 @@ export async function deleteGroup(orm: Orm, actor: Actor, groupId: string): Prom
     }
     await tx
       .update(groups)
-      .set({ deletedAt: new Date(), updatedAt: new Date() })
+      .set({ deletedAt: sql`now()`, updatedAt: sql`now()` })
       .where(eq(groups.id, groupId));
     await recordActivity(tx, {
       groupId,
