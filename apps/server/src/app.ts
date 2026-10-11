@@ -16,6 +16,7 @@ import { originGuard } from "./http/origin";
 import type { Mailer } from "./mail/mailer";
 import { registerActivityRoutes } from "./modules/activity/routes";
 import { registerBalanceRoutes } from "./modules/balances/routes";
+import { registerConfigRoutes } from "./modules/config/routes";
 import { registerExpenseRoutes } from "./modules/expenses/routes";
 import { registerExportRoutes } from "./modules/export/routes";
 import { registerGroupRoutes } from "./modules/groups/routes";
@@ -152,6 +153,7 @@ export async function buildApp({
             name: "evenly" as const,
           }));
 
+          registerConfigRoutes(api, { orm: db.orm, env, emailEnabled: mailer !== undefined });
           const invites = { orm: db.orm, env, mailer };
           await registerPublicInviteRoutes(api, invites);
 

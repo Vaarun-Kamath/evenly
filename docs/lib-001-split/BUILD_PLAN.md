@@ -59,12 +59,12 @@ commits on `main` if you're working alone). Check items off in this file as you 
 - [x] Integration tests for SPEC.md scenarios 2–4 and 6–9 at the API level (`scenarios.test.ts` plays 1 to 10 as one story).
 
 ## M5: Web UI
-- [ ] Auth pages, dashboard, create group, group page (expenses + balances), add/edit expense with the live split preview,
+- [x] Auth pages, dashboard, create group, group page (expenses + balances), add/edit expense with the live split preview,
       settle-up (one tap per suggested payment), settings (members, invites, roles), invite landing page, account page.
-- [ ] Mobile-first layouts, checked at 375px wide; keyboard navigation; visible focus; AA contrast.
-- [ ] Empty, loading and error states on every screen; conflict (409) dialog on expense edit.
-- [ ] Settle-up screen suggests from the pairwise list when simplify is off (ADR-0004).
-- [ ] Playwright: SPEC.md scenarios 1–10 against the built Docker image, at `BASE_PATH=/` and `BASE_PATH=/evenly` (behind a proxy), including a reload on a deep link such as `/evenly/g/<id>/settle`.
+- [x] Mobile-first layouts, checked at 375px wide; keyboard navigation; visible focus; AA contrast.
+- [x] Empty, loading and error states on every screen; conflict (409) dialog on expense edit.
+- [x] Settle-up screen suggests from the pairwise list when simplify is off (ADR-0004).
+- [x] Playwright: SPEC.md scenarios 1–10 against the built Docker image, at `BASE_PATH=/` and `BASE_PATH=/evenly` (the app serves the prefix itself, ADR-0002, so no stripping proxy is needed), including a reload on a deep link such as `/evenly/g/<id>/settle`. (`scripts/e2e.sh`; also axe-core on every main screen and a 375px overflow check. ADR-0010.)
 
 ## M6: Release
 - [ ] README: screenshots, features, a "Self-host in 2 minutes" section (`docker compose up`), configuration table, an honest comparison with commercial alternatives, roadmap.

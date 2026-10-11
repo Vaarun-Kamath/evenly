@@ -1,65 +1,40 @@
-import { pingResponseSchema } from "@evenly/contracts";
-import { useQuery } from "@tanstack/react-query";
-import { Link, Outlet } from "@tanstack/react-router";
-import { apiGet, basePath } from "./lib/api";
+import { Link } from "@tanstack/react-router";
+import { PublicShell } from "./components/AppShell";
+import { Card, LinkButton } from "./components/ui";
 
-export function Layout() {
+/** Shown for any address the app does not know. */
+export function NotFoundPage() {
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-4 py-10">
-      <header className="flex items-baseline justify-between">
-        <Link to="/" className="text-xl font-semibold tracking-tight">
-          Evenly
+    <PublicShell>
+      <Card as="section" className="flex flex-col items-start gap-4 p-6">
+        <h1 className="text-2xl font-semibold tracking-tight">Page not found</h1>
+        <p className="text-sm text-muted">That address does not lead anywhere in Evenly.</p>
+        <LinkButton to="/">Go to your groups</LinkButton>
+      </Card>
+    </PublicShell>
+  );
+}
+
+/** Shown when a page crashes: a way out, and what happened. */
+export function CrashPage({ error }: { error: unknown }) {
+  return (
+    <PublicShell>
+      <Card as="section" className="flex flex-col items-start gap-4 p-6">
+        <h1 className="text-2xl font-semibold tracking-tight">Something went wrong</h1>
+        <p className="text-sm text-muted">
+          {error instanceof Error ? error.message : "An unexpected error stopped this page."}
+        </p>
+        <button
+          type="button"
+          className="rounded-xl bg-accent px-4 py-3 text-sm font-medium text-accent-fg"
+          onClick={() => window.location.reload()}
+        >
+          Reload the page
+        </button>
+        <Link to="/" className="text-sm underline underline-offset-4">
+          Go to your groups
         </Link>
-        <nav className="flex gap-4 text-sm">
-          <Link to="/" className="underline-offset-4 hover:underline [&.active]:font-semibold">
-            Home
-          </Link>
-          <Link
-            to="/status"
-            className="underline-offset-4 hover:underline [&.active]:font-semibold"
-          >
-            Status
-          </Link>
-        </nav>
-      </header>
-      <main className="mt-10 flex-1">
-        <Outlet />
-      </main>
-      <footer className="mt-10 text-xs text-neutral-500">Free and open source, AGPL-3.0.</footer>
-    </div>
-  );
-}
-
-export function Home() {
-  return (
-    <section className="space-y-3">
-      <h1 className="text-3xl font-semibold tracking-tight">Split expenses, evenly.</h1>
-      <p className="text-neutral-600 dark:text-neutral-400">
-        Hello from Evenly. The app itself is on its way; this page proves the skeleton works.
-      </p>
-    </section>
-  );
-}
-
-export function Status() {
-  const ping = useQuery({
-    queryKey: ["ping"],
-    queryFn: () => apiGet("/ping", pingResponseSchema),
-  });
-
-  return (
-    <section className="space-y-3">
-      <h1 className="text-2xl font-semibold tracking-tight">Status</h1>
-      <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
-        <dt className="text-neutral-500">Base path</dt>
-        <dd className="font-mono">{basePath === "" ? "/" : basePath}</dd>
-        <dt className="text-neutral-500">API</dt>
-        <dd role="status">
-          {ping.isPending && "Checking…"}
-          {ping.isError && `Unreachable: ${ping.error.message}`}
-          {ping.isSuccess && `OK (${ping.data.name})`}
-        </dd>
-      </dl>
-    </section>
+      </Card>
+    </PublicShell>
   );
 }

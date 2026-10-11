@@ -1,17 +1,94 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
 
-/* Monochrome tokens; to be aligned with the portfolio's palette in M5. */
+/*
+ * Monochrome tokens, taken from the portfolio's tailwind.config.js (ink 950 to 600, paper) so the app
+ * looks like part of the same site (PLATFORM.md section 9). Light by default, dark when the system
+ * asks for it. Contrast: text on background is at least 7:1 in both modes, muted text at least 4.5:1.
+ */
 :root {
   color-scheme: light dark;
+  --bg: #f2f1ee; /* paper */
+  --surface: #ffffff;
+  --surface-2: #e9e8e4;
+  --line: #cfcec9;
+  --fg: #0f0f10; /* ink 900 */
+  --muted: #55555a;
+  --accent: #0f0f10;
+  --accent-fg: #f2f1ee;
+  --danger: #b3261e;
+  --danger-bg: #fbeceb;
+  --focus: #0f0f10;
+  --backdrop: rgb(15 15 16 / 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #09090a; /* ink 950 */
+    --surface: #171718; /* ink 800 */
+    --surface-2: #232325; /* ink 700 */
+    --line: #2e2e31; /* ink 600 */
+    --fg: #f2f1ee; /* paper */
+    --muted: #a8a8ac;
+    --accent: #f2f1ee;
+    --accent-fg: #09090a;
+    --danger: #f2867f;
+    --danger-bg: #2a1614;
+    --focus: #f2f1ee;
+    --backdrop: rgb(0 0 0 / 0.65);
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
+  --ease-cream: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  background: var(--bg);
 }
 
 body {
-  @apply bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
+  @apply bg-bg font-sans text-fg antialiased;
+  min-height: 100dvh;
+  font-feature-settings:
+    "tnum" 1,
+    "cv11" 1;
+}
+
+/* A visible focus ring for everything that can be focused with the keyboard. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Native <dialog>: focus is trapped and Escape closes it, with no script. */
+dialog {
+  @apply m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-line bg-surface p-0 text-fg;
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+}
+
+dialog::backdrop {
+  background: var(--backdrop);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

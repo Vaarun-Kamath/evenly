@@ -1,6 +1,7 @@
 export * from "./activity";
 export * from "./balances";
 export * from "./common";
+export * from "./config";
 export * from "./errors";
 export * from "./expenses";
 export * from "./groups";

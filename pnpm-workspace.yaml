@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - e2e
 
 # Dependency build scripts are denied unless listed. esbuild's postinstall only verifies its
 # prebuilt binary (installed through optional dependencies), so it is not needed.

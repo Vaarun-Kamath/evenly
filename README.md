@@ -36,6 +36,7 @@ pnpm dev          # API on :3000, web app on :5173 (proxies /api)
 pnpm check        # lint, format check, typecheck, tests (the server's integration tests need the
                   # Postgres above; they create and drop their own databases)
 ./scripts/smoke.sh  # builds the Docker image and checks it at / and /evenly
+./scripts/e2e.sh    # the Playwright scenarios against that image (once: pnpm --filter @evenly/e2e exec playwright install chromium)
 ```
 
 Layout: `apps/server` (Fastify API), `apps/web` (React SPA), `packages/core` (pure money and split

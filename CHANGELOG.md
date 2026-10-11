@@ -7,6 +7,14 @@ and the project uses [Semantic Versioning](https://semver.org/) once it reaches 
 
 ### Added
 
+- Web app: sign up, log in and password reset; a dashboard with totals across groups; groups with expenses, balances
+  and an activity feed; adding and editing expenses with a live split preview for all four methods; one-tap settle-up
+  (the simplified plan, or the pairwise debts when simplify is off); group settings (people, roles, invitation links,
+  claim links for placeholders); the invitation landing page; account settings. Mobile-first, keyboard-friendly, light
+  and dark, self-hosted fonts.
+- End-to-end tests (Playwright, `scripts/e2e.sh`): SPEC.md scenarios 1 to 10 against the built image at `/` and
+  `/evenly`, a reload on a deep link, a keyboard and focus check, an axe-core accessibility check and a 375px overflow
+  check; a CI job runs them.
 - Expenses and settlements: create (safe to retry), edit with optimistic locking, soft delete and restore, filtered and
   paged lists; the four split methods; balances with a simplified plan and pairwise debts; an overview across groups;
   a streamed CSV export whose totals match the balances.

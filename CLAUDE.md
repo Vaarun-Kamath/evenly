@@ -9,7 +9,7 @@ Software" initiative; this repo lives at `liberated-split/evenly` next to other 
 - `docs/PLATFORM.md`: conventions shared by all Liberated Software projects.
 - `docs/lib-001-split/SPEC.md`: what to build. `ARCHITECTURE.md`: how. `BUILD_PLAN.md`: milestones M0 to M6.
 - `docs/adr/`: decisions that deviate from or fill gaps in those docs. **An ADR wins over the older docs.**
-  Read all of them (0001 to 0009) before changing the stack, auth, base path, membership or money details.
+  Read all of them (0001 to 0010) before changing the stack, auth, base path, membership or money details.
 - The portfolio repo (`../../Portfolio`) is the master copy of the handoff docs. Never modify it from here.
 
 ## Status
@@ -23,6 +23,7 @@ for the owner: what works, how to run it, what is next, decisions needed.
 ```
 apps/server     Fastify 5 API; also serves the built web app (src/spa.ts). Bundled by esbuild (build.mjs).
 apps/web        React 19 + Vite + TanStack Router/Query + Tailwind 4.
+e2e             Playwright against the built Docker image (not part of `pnpm test`); run `scripts/e2e.sh`.
 packages/core   Pure money/split/balance logic. No I/O, no runtime dependencies. 100% coverage enforced by `pnpm test`.
 packages/contracts  zod schemas + types shared by server and web.
 ```
@@ -37,6 +38,13 @@ Money maths lives only in `@evenly/core`; the server calls `computeSplit`/`valid
 Migrations are SQL in `apps/server/drizzle/` (`pnpm --filter @evenly/server db:generate`; hand-written ones with
 `--custom`). `src/db/auth-schema.ts` is generated; do not edit it.
 
+Web layout (`apps/web/src`): `lib/` (api client, queries, auth calls, format, base path), `components/` (`ui.tsx`
+primitives, `AppShell.tsx`), `features/<area>/` (auth, groups, expenses, settle, invite, account), `router.tsx`.
+Form logic is pure functions in `features/expenses/formState.ts` on top of `@evenly/core`. Modals are native `<dialog>`
+(`Dialog`, `ConfirmDialog`); no component library, no react-hook-form, no optimistic updates (ADR-0010). A new screen
+goes on the axe and 375px lists in `e2e/tests/scenarios.spec.ts`. A bare `href="#x"` leaves the page because of
+`<base href>`; handle in-page links in JS.
+
 Workspace packages export TypeScript source directly (no per-package build). The server bundles them.
 
 ## Commands
@@ -49,6 +57,8 @@ pnpm --filter @evenly/server test:unit          # no database needed
 pnpm --filter @evenly/server test:integration   # needs Postgres (see README); one database per test file
 pnpm build
 ./scripts/smoke.sh    # builds the Docker image, checks it at / and /evenly (needs Docker running)
+./scripts/e2e.sh      # builds the image, runs the Playwright scenarios at / and /evenly (needs Docker; first run:
+                      # pnpm --filter @evenly/e2e exec playwright install chromium). APP_PORT=3300 if 3000 is taken.
 ```
 
 ## Rules that must not be broken
@@ -75,6 +85,6 @@ pnpm build
   `npm install -g pnpm@12.11.2` because Corepack 0.33 cannot run it.
 - Files use LF (`.gitattributes`). The Windows shell here is Git Bash; there is no `python`.
 - Docker Desktop must be running for `scripts/smoke.sh`.
-- Do not push to GitHub without the owner's go-ahead.
+- Gate every commit and push on `pnpm check` passing; a flaky run is a bug to find, not to retry.
 - `SESSION_SECRET` is optional until M2. Decide in M2 whether it is required or auto-generated and stored,
   keeping `docker compose up` working with zero configuration.

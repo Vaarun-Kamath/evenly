@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": "http://localhost:3000",
+      "/api": process.env.EVENLY_API_URL ?? "http://localhost:3000",
     },
   },
   build: {
@@ -18,6 +18,8 @@ export default defineConfig({
     sourcemap: false,
   },
   test: {
-    include: ["test/**/*.test.ts"],
+    include: ["test/**/*.test.{ts,tsx}"],
+    environment: "happy-dom",
+    setupFiles: ["./test/setup.ts"],
   },
 });
