@@ -2,6 +2,7 @@ import { STATUS_CODES } from "node:http";
 import { hasZodFastifySchemaValidationErrors } from "@fastify/type-provider-zod";
 import type { Problem } from "@evenly/contracts";
 import type { FastifyInstance, FastifyReply } from "fastify";
+import { ProblemError } from "./problem";
 
 interface ProblemOptions {
   type?: string;
@@ -38,6 +39,12 @@ function statusOf(error: unknown): number {
 
 export function registerErrorHandling(app: FastifyInstance): void {
   app.setErrorHandler((error, request, reply) => {
+    if (error instanceof ProblemError) {
+      return sendProblem(reply, error.status, {
+        type: `urn:evenly:problem:${error.code}`,
+        detail: error.message,
+      });
+    }
     if (hasZodFastifySchemaValidationErrors(error)) {
       return sendProblem(reply, 400, {
         type: "urn:evenly:problem:validation",

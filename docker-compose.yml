@@ -34,6 +34,7 @@ services:
       # Optional. When empty the app generates a secret on first start and keeps it in the database.
       SESSION_SECRET: ${SESSION_SECRET:-}
       ALLOW_SIGNUPS: ${ALLOW_SIGNUPS:-true}
+      INVITE_DEFAULT_TTL_DAYS: ${INVITE_DEFAULT_TTL_DAYS:-7}
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-}
       # Optional email (password reset by email). SMTP_FROM is required when SMTP_URL is set.
       SMTP_URL: ${SMTP_URL:-}

@@ -7,6 +7,9 @@ and the project uses [Semantic Versioning](https://semver.org/) once it reaches 
 
 ### Added
 
+- Groups, members and invites: create, update, archive and delete groups; roles (owner, admin, member);
+  placeholder members; invite links with expiry and use limits, email invitations, claiming a placeholder; leaving
+  and removing people only at a zero balance; an activity feed; account deletion.
 - Database (Drizzle, Postgres 18), migrations that run at startup under an advisory lock, and email-and-password
   accounts (Better Auth): sign up, log in, log out, log out everywhere, profile (`/api/v1/me`), sign-up policy,
   rate limits, Origin check, and a `reset-password` command.

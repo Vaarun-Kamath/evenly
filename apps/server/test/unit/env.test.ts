@@ -81,6 +81,14 @@ describe("loadEnv", () => {
       expect(() => loadEnv({ ...base, ALLOW_SIGNUPS: "maybe" })).toThrow(/ALLOW_SIGNUPS/);
     });
 
+    it("defaults INVITE_DEFAULT_TTL_DAYS to 7 and checks its range", () => {
+      expect(loadEnv(base).INVITE_DEFAULT_TTL_DAYS).toBe(7);
+      expect(loadEnv({ ...base, INVITE_DEFAULT_TTL_DAYS: "30" }).INVITE_DEFAULT_TTL_DAYS).toBe(30);
+      expect(() => loadEnv({ ...base, INVITE_DEFAULT_TTL_DAYS: "0" })).toThrow(
+        /INVITE_DEFAULT_TTL_DAYS/,
+      );
+    });
+
     it("parses TRUSTED_ORIGINS into normalised origins", () => {
       expect(loadEnv(base).TRUSTED_ORIGINS).toEqual([]);
       expect(

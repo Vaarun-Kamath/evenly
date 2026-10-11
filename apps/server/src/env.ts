@@ -85,6 +85,7 @@ const baseEnvSchema = z.object({
     }),
   MIGRATION_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
   ALLOW_SIGNUPS: z.enum(["true", "false", "invite-only"]).default("true"),
+  INVITE_DEFAULT_TTL_DAYS: z.coerce.number().int().min(1).max(3650).default(7),
   TRUSTED_ORIGINS: z.string().default("").transform(parseOrigins),
   STATIC_DIR: z.string().optional(),
   SMTP_URL: z.string().optional(),

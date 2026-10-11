@@ -40,8 +40,9 @@ library's defaults, or the documents, needed a decision.
 9. **Account enumeration.** Sign-in answers identically for a wrong password and an unknown account, and
    password-reset requests answer identically for known and unknown addresses. Sign-up reports an existing email
    (the library's behaviour with automatic sign-in); accepted for v1, since invites by email reveal the same.
-10. **Sign-up policy** (`ALLOW_SIGNUPS`): `true`, `false`, or `invite-only`. Until invites exist (M3), invite-only
-    accepts no sign-ups; M3 supplies the `InviteGate`. Existing users can always sign in.
+10. **Sign-up policy** (`ALLOW_SIGNUPS`): `true`, `false`, or `invite-only`. Existing users can always sign in. The
+    first account on a fresh instance is always allowed, and invite-only sign-ups are decided by the invite gate
+    (both in ADR-0008).
 11. **Password reset.** By email only when SMTP is configured; otherwise
     `node dist/cli.js reset-password <email>` prints a single-use link (valid one hour) to
     `<PUBLIC_URL>/reset?token=...`. A reset signs out every session.

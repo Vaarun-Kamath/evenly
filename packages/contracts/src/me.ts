@@ -26,3 +26,9 @@ export const updateMeRequestSchema = z
   .strict()
   .refine((body) => Object.keys(body).length > 0, "Send at least one field to update");
 export type UpdateMeRequest = z.infer<typeof updateMeRequestSchema>;
+
+/** Body of `DELETE /api/v1/me`: deleting an account asks for the password again. */
+export const deleteAccountRequestSchema = z
+  .object({ password: z.string().min(1).max(128) })
+  .strict();
+export type DeleteAccountRequest = z.infer<typeof deleteAccountRequestSchema>;

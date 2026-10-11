@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@fastify/helmet": "^13.1.2",
+    "@fastify/rate-limit": "^11.2.1",
     "@fastify/static": "^10.1.6",
     "@fastify/type-provider-zod": "^1.0.0",
     "better-auth": "^1.7.7",

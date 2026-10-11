@@ -34,6 +34,21 @@ export interface HarnessOptions {
   withMailer?: boolean;
   /** Start from an empty database instead of the migrated template. */
   migrated?: boolean;
+  /** Collects every registered route. */
+  routes?: RouteInfo[];
+}
+
+export interface RouteInfo {
+  method: string | string[];
+  url: string;
+}
+
+/** A client for `/api/v1` acting as one signed-in user, or as nobody. */
+export interface Client {
+  get(path: string): Promise<LightMyRequestResponse>;
+  post(path: string, payload?: object): Promise<LightMyRequestResponse>;
+  patch(path: string, payload: object): Promise<LightMyRequestResponse>;
+  delete(path: string, payload?: object): Promise<LightMyRequestResponse>;
 }
 
 export interface Session {
@@ -55,6 +70,8 @@ export interface Harness {
   origin: string;
   /** `app.inject` with the app's Origin header filled in (override it by passing `headers.origin`). */
   request(options: InjectOptions): Promise<LightMyRequestResponse>;
+  /** `/api/v1` as this user (or anonymously, with null). */
+  as(session: Session | null): Client;
   signUp(overrides?: { email?: string; name?: string; password?: string }): Promise<Session>;
   signIn(email: string, password?: string): Promise<LightMyRequestResponse>;
   close(): Promise<void>;
@@ -99,6 +116,7 @@ export async function startHarness(options: HarnessOptions = {}): Promise<Harnes
     secret: SECRET,
     mailer,
     rateLimits: options.rateLimits ?? HIGH_RATE_LIMITS,
+    ...(options.routes !== undefined && { onRoute: (route) => options.routes?.push(route) }),
   });
   await app.ready();
 
@@ -119,6 +137,21 @@ export async function startHarness(options: HarnessOptions = {}): Promise<Harnes
     base,
     origin,
     request,
+    as(session) {
+      const call = (method: "GET" | "POST" | "PATCH" | "DELETE", path: string, payload?: object) =>
+        request({
+          method,
+          url: `${base}/api/v1${path}`,
+          headers: session === null ? {} : { cookie: session.cookie },
+          ...(payload !== undefined && { payload }),
+        });
+      return {
+        get: (path) => call("GET", path),
+        post: (path, payload) => call("POST", path, payload),
+        patch: (path, payload) => call("PATCH", path, payload),
+        delete: (path, payload) => call("DELETE", path, payload),
+      };
+    },
     async signUp(overrides = {}) {
       const email = overrides.email ?? uniqueEmail();
       const response = await request({

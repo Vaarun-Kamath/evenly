@@ -40,14 +40,14 @@ commits on `main` if you're working alone). Check items off in this file as you 
 **Done when** integration tests cover sign up → log in → `GET /me` → log out, plus rate limiting and the Origin check.
 
 ## M3: Groups, members, invites
-- [ ] Group CRUD, archive, `simplify_debts` setting, roles and `requireMember`.
-- [ ] Placeholder members; invite links (expiry, max uses, revoke); preview; accept; claiming a placeholder.
-- [ ] Owner, claim-invite, account-deletion and rejoin rules from ADR-0003, each with a test.
-- [ ] Provide the `InviteGate` that lets `ALLOW_SIGNUPS=invite-only` accept a sign-up with a valid invite (ADR-0007).
-- [ ] Keep `group_members.display_name` of real members in step when a user renames themselves (`PATCH /me`).
-- [ ] Leave/remove only with a zero balance (wired up properly once M4 exists; until then, check that no expenses exist).
-- [ ] Non-members get 404 on every group route (one parameterised test covering all routes).
-- [ ] Activity rows for every change.
+- [x] Group CRUD, archive, `simplify_debts` setting, roles and `requireMember`.
+- [x] Placeholder members; invite links (expiry, max uses, revoke); preview; accept; claiming a placeholder.
+- [x] Owner, claim-invite, account-deletion and rejoin rules from ADR-0003, each with a test (`DELETE /api/v1/me`).
+- [x] Provide the `InviteGate` that lets `ALLOW_SIGNUPS=invite-only` accept a sign-up with a valid invite (ADR-0007, ADR-0008).
+- [x] Keep `group_members.display_name` of real members in step when a user renames themselves (`PATCH /me`).
+- [x] Leave/remove only with a zero balance (from the live expenses and settlements; the balance query already exists).
+- [x] Non-members get 404 on every group route (one parameterised test covering all routes, with a check that no route is missing from it).
+- [x] Activity rows for every change (and `GET /groups/:gid/activity`).
 
 ## M4: Expenses, settlements, balances
 - [ ] Expense create (idempotent via client `id`), read, list with filters and cursor, update with `version`, soft delete and restore.

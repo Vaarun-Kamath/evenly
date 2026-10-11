@@ -85,6 +85,7 @@ export const groupMembers = pgTable(
       .on(table.groupId, table.userId)
       .where(sql`${table.userId} IS NOT NULL`),
     index("group_members_user_idx").on(table.userId),
+    index("group_members_group_idx").on(table.groupId),
   ],
 );
 
@@ -108,7 +109,10 @@ export const groupInvites = pgTable(
     revokedAt: timestamptz("revoked_at"),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
-  (table) => [check("group_invites_max_uses", sql`${table.maxUses} > 0`)],
+  (table) => [
+    check("group_invites_max_uses", sql`${table.maxUses} > 0`),
+    index("group_invites_group_idx").on(table.groupId),
+  ],
 );
 
 export const expenses = pgTable(
@@ -210,6 +214,7 @@ export const settlements = pgTable(
   (table) => [
     check("settlements_distinct_members", sql`${table.fromMemberId} <> ${table.toMemberId}`),
     check("settlements_amount_range", sql`${table.amountMinor} BETWEEN 1 AND ${MAX_AMOUNT_SQL}`),
+    index("settlements_group_idx").on(table.groupId),
   ],
 );
 

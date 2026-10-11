@@ -62,6 +62,15 @@ for base in "" "/evenly"; do
   [[ "$status" == "200" ]] || fail "GET $PUBLIC_URL/api/v1/me with the session returned $status, expected 200"
   echo "ok  $PUBLIC_URL/api/v1/me with the session cookie -> $status"
   check "$PUBLIC_URL/api/v1/me" 401
+
+  # A group, an invitation link to it, and the public preview of that link.
+  json() { curl -sS -b "$jar" -H 'Content-Type: application/json' -H "Origin: $origin" "$@"; }
+  group_id="$(json -d '{"name":"Smoke trip","currency":"INR"}' "$PUBLIC_URL/api/v1/groups" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)"
+  [[ -n "$group_id" ]] || fail "could not create a group"
+  invite_url="$(json -d '{}' "$PUBLIC_URL/api/v1/groups/$group_id/invites" | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4)"
+  [[ "$invite_url" == "$PUBLIC_URL/invite/"* ]] || fail "unexpected invitation link: $invite_url"
+  check "$PUBLIC_URL/api/v1/invites/${invite_url##*/invite/}" 200 '"name":"Smoke trip"'
+  check "$PUBLIC_URL/api/v1/groups/$group_id" 401
   rm -f "$jar"
 
   # The administrator's password reset command, from the built image.

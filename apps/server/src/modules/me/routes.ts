@@ -1,53 +1,52 @@
-import { meResponseSchema, updateMeRequestSchema, type MeResponse } from "@evenly/contracts";
-import { eq } from "drizzle-orm";
-import type { FastifyInstance } from "fastify";
+import {
+  deleteAccountRequestSchema,
+  meResponseSchema,
+  updateMeRequestSchema,
+} from "@evenly/contracts";
 import type { ZodTypeProvider } from "@fastify/type-provider-zod";
-import type { SessionUser } from "../../auth/http";
+import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+import type { Auth } from "../../auth/auth";
+import { toFetchHeaders } from "../../auth/http";
 import type { Orm } from "../../db/client";
-import { user } from "../../db/auth-schema";
+import { ProblemError } from "../../http/problem";
+import { actorOf } from "../common/routes";
+import { deleteAccount, toMe, updateProfile } from "./service";
 
-function toMe(row: {
-  id: string;
-  name: string;
-  email: string;
-  defaultCurrency?: string | null | undefined;
-  createdAt: Date;
-}): MeResponse {
-  return {
-    id: row.id,
-    name: row.name,
-    email: row.email,
-    defaultCurrency: row.defaultCurrency ?? null,
-    createdAt: row.createdAt.toISOString(),
-  };
-}
-
-/** `GET` and `PATCH /api/v1/me`. Register inside a scope that has `requireSession`. */
-export function registerMeRoutes(scope: FastifyInstance, orm: Orm): void {
+/** `GET`, `PATCH` and `DELETE /api/v1/me`. Register inside a scope that has `requireSession`. */
+export function registerMeRoutes(scope: FastifyInstance, orm: Orm, auth: Auth): void {
   const routes = scope.withTypeProvider<ZodTypeProvider>();
-  // requireSession ran before these handlers, so the user is set.
-  const current = (request: { sessionUser: SessionUser | null }) => request.sessionUser!;
 
-  routes.get("/me", { schema: { response: { 200: meResponseSchema } } }, (request) =>
-    toMe(current(request)),
-  );
+  routes.get("/me", { schema: { response: { 200: meResponseSchema } } }, (request) => {
+    actorOf(request); // fails loudly if this route is ever mounted without requireSession
+    return toMe(request.sessionUser!);
+  });
 
   routes.patch(
     "/me",
     { schema: { body: updateMeRequestSchema, response: { 200: meResponseSchema } } },
-    async (request) => {
-      const { id } = current(request);
-      const { name, defaultCurrency } = request.body;
-      const [updated] = await orm
-        .update(user)
-        .set({
-          ...(name !== undefined && { name }),
-          ...(defaultCurrency !== undefined && { defaultCurrency }),
-        })
-        .where(eq(user.id, id))
-        .returning();
-      // The user exists: they just authenticated as them.
-      return toMe(updated!);
+    (request) => updateProfile(orm, actorOf(request).userId, request.body),
+  );
+
+  // Deleting an account is permanent, so it asks for the password again.
+  routes.delete(
+    "/me",
+    { schema: { body: deleteAccountRequestSchema, response: { 204: z.null() } } },
+    async (request, reply) => {
+      const actor = actorOf(request);
+      const headers = toFetchHeaders(request);
+      try {
+        await auth.api.verifyPassword({ body: { password: request.body.password }, headers });
+      } catch {
+        throw new ProblemError(403, "invalid-password", "That password is not correct.");
+      }
+      await deleteAccount(orm, actor);
+
+      // The sessions are gone with the account; this tells the browser to drop its cookies too.
+      const signOut = await auth.api.signOut({ headers, asResponse: true });
+      const cookies = signOut.headers.getSetCookie();
+      if (cookies.length > 0) reply.header("set-cookie", cookies);
+      return reply.code(204).send(null);
     },
   );
 }

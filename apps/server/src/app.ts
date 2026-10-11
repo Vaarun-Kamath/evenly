@@ -7,13 +7,18 @@ import {
   type ZodTypeProvider,
 } from "@fastify/type-provider-zod";
 import Fastify, { type FastifyServerOptions } from "fastify";
-import { createAuth, type InviteGate, type RateLimits } from "./auth/auth";
+import { createAuth, INVITE_HEADER, type InviteGate, type RateLimits } from "./auth/auth";
 import { registerAuthRoutes, requireSession } from "./auth/http";
 import type { Database } from "./db/client";
 import type { Env } from "./env";
 import { registerErrorHandling, sendProblem } from "./http/errors";
 import { originGuard } from "./http/origin";
 import type { Mailer } from "./mail/mailer";
+import { registerActivityRoutes } from "./modules/activity/routes";
+import { registerGroupRoutes } from "./modules/groups/routes";
+import { registerInviteRoutes, registerPublicInviteRoutes } from "./modules/invites/routes";
+import { inviteAllowsSignup } from "./modules/invites/service";
+import { registerMemberRoutes } from "./modules/members/routes";
 import { registerMeRoutes } from "./modules/me/routes";
 import { isSpaRoute, loadSpa, registerSpaRoutes, resolveStaticDir, sendIndex } from "./spa";
 
@@ -26,6 +31,8 @@ export interface AppDeps {
   mailer?: Mailer | undefined;
   /** Overrides for tests. */
   rateLimits?: RateLimits;
+  /** Called for every route as it is registered (the tests check that every route is covered). */
+  onRoute?: (route: { method: string | string[]; url: string }) => void;
   inviteGate?: InviteGate;
 }
 
@@ -38,7 +45,15 @@ function toFastifyTrustProxy(value: Env["TRUST_PROXY"]): FastifyServerOptions["t
 }
 
 /** Builds the Fastify instance without listening, so tests can drive it with `app.inject`. */
-export async function buildApp({ env, db, secret, mailer, rateLimits, inviteGate }: AppDeps) {
+export async function buildApp({
+  env,
+  db,
+  secret,
+  mailer,
+  rateLimits,
+  inviteGate,
+  onRoute,
+}: AppDeps) {
   const app = Fastify({
     logger: {
       level: env.LOG_LEVEL,
@@ -49,6 +64,9 @@ export async function buildApp({ env, db, secret, mailer, rateLimits, inviteGate
     genReqId: () => randomUUID(),
   }).withTypeProvider<ZodTypeProvider>();
 
+  if (onRoute !== undefined) {
+    app.addHook("onRoute", (route) => onRoute({ method: route.method, url: route.url }));
+  }
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
   registerErrorHandling(app);
@@ -81,7 +99,12 @@ export async function buildApp({ env, db, secret, mailer, rateLimits, inviteGate
     secret,
     mailer,
     ...(rateLimits !== undefined && { rateLimits }),
-    ...(inviteGate !== undefined && { inviteGate }),
+    inviteGate:
+      inviteGate ??
+      (({ headers, email }) => {
+        const token = headers.get(INVITE_HEADER);
+        return token === null ? Promise.resolve(false) : inviteAllowsSignup(db.orm, token, email);
+      }),
     onMailError: (error) => app.log.error({ err: error }, "could not send email"),
   });
   const allowedOrigins: ReadonlySet<string> = new Set([env.publicOrigin, ...env.TRUSTED_ORIGINS]);
@@ -125,9 +148,16 @@ export async function buildApp({ env, db, secret, mailer, rateLimits, inviteGate
             name: "evenly" as const,
           }));
 
+          const invites = { orm: db.orm, env, mailer };
+          await registerPublicInviteRoutes(api, invites);
+
           await api.register((authed, _options, done) => {
             authed.addHook("preHandler", requireSession(auth));
-            registerMeRoutes(authed, db.orm);
+            registerMeRoutes(authed, db.orm, auth);
+            registerGroupRoutes(authed, db.orm);
+            registerMemberRoutes(authed, db.orm);
+            registerInviteRoutes(authed, invites);
+            registerActivityRoutes(authed, db.orm);
             done();
           });
         },

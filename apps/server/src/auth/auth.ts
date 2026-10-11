@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import { user } from "../db/auth-schema";
 import { schema, type Orm } from "../db/client";
 import type { Env } from "../env";
 import type { Mailer } from "../mail/mailer";
@@ -37,8 +38,17 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   },
 };
 
-/** Decides whether an invite-only instance lets this sign-up request through. Wired up in M3. */
-export type InviteGate = (headers: Headers) => Promise<boolean>;
+/**
+ * Decides whether an invite-only instance lets this sign-up request through: the sign-up carries the
+ * invite link's token in the `x-evenly-invite` header (ADR-0007).
+ */
+export type InviteGate = (request: {
+  headers: Headers;
+  email: string | undefined;
+}) => Promise<boolean>;
+
+/** The request header that carries an invite token to a sign-up on an invite-only instance. */
+export const INVITE_HEADER = "x-evenly-invite";
 
 export interface AuthDeps {
   env: Env;
@@ -50,7 +60,7 @@ export interface AuthDeps {
   /** Replaces emailing the reset link (used by the `reset-password` command to print it instead). */
   deliverResetToken?: (email: string, token: string) => Promise<void>;
   rateLimits?: RateLimits;
-  /** Until invites exist (M3), an invite-only instance accepts no sign-ups. */
+  /** Decides sign-ups on an invite-only instance; without it, none are accepted. */
   inviteGate?: InviteGate;
   onMailError?: (error: unknown) => void;
 }
@@ -94,6 +104,10 @@ export function createAuth(deps: AuthDeps) {
               `If this was not you, you can ignore this email.`,
           }));
   const limits = deps.rateLimits ?? DEFAULT_RATE_LIMITS;
+  const hasUsers = async (): Promise<boolean> => {
+    const [existing] = await orm.select({ id: user.id }).from(user).limit(1);
+    return existing !== undefined;
+  };
   const inviteGate: InviteGate = deps.inviteGate ?? (() => Promise.resolve(false));
   const loginLimiter = new SlidingWindowLimiter(
     limits.perAccount.login.max,
@@ -172,12 +186,16 @@ export function createAuth(deps: AuthDeps) {
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         if (ctx.path === "/sign-up/email") {
-          if (env.ALLOW_SIGNUPS === "false") {
+          // The first account on a fresh instance is always allowed, so a private instance can be
+          // set up: its owner has to exist before anyone can be invited (ADR-0007).
+          const policyApplies = env.ALLOW_SIGNUPS !== "true" && (await hasUsers());
+          if (policyApplies && env.ALLOW_SIGNUPS === "false") {
             throw new APIError("FORBIDDEN", { message: "Sign-ups are disabled on this instance." });
           }
           if (
+            policyApplies &&
             env.ALLOW_SIGNUPS === "invite-only" &&
-            !(await inviteGate(ctx.headers ?? new Headers()))
+            !(await inviteGate({ headers: ctx.headers ?? new Headers(), email: emailOf(ctx.body) }))
           ) {
             throw new APIError("FORBIDDEN", {
               message: "This instance accepts new accounts only through an invitation link.",
