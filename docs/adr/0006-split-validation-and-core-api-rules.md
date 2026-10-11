@@ -39,9 +39,10 @@ decisions are implemented and tested in `packages/core`.
     layer maps codes to problem+json in M4.
 12. **Currency table.** `CURRENCY_EXPONENTS` lists active ISO 4217 currencies with an exponent of 0, 2 or 3.
     Excluded on purpose: fund and special codes, and the two currencies with an exponent of 4 (CLF, UYW),
-    plus currencies being withdrawn (BGN after the euro changeover, HRK). ICU differs from ISO for a known
-    set of codes (listed in `test/currency.test.ts`); stored values follow ISO. A currency can be added with
-    one line.
+    plus currencies being withdrawn (BGN after the euro changeover, HRK). ICU differs from ISO for
+    several codes and changes between Node releases (CI found HUF, COP, IDR and PKR differing on Node 24), so
+    stored values follow ISO and the test checks the table against literal ISO lists; only non-2-decimal
+    currencies are cross-checked with `Intl`. A currency can be added with one line.
 
 ## Consequences
 
