@@ -27,6 +27,11 @@ Status: Accepted (2026-10-11). Fills gaps in SPEC.md sections 4.4 to 4.8 and ARC
 6. **Timestamps** that the app writes (`updated_at`, `deleted_at`, `left_at`, `archived_at`, `revoked_at`) use the
    database clock (`now()`), like the `created_at` defaults, so they cannot disagree because two machines' clocks differ.
    Invite expiry is the one exception: it is set and compared by the app.
+   **Join order is monotonic.** The canonical member order (`joined_at`, then `id`) decides who receives the odd minor
+   units, so it must follow who joined first even if a clock steps back (the Postgres container on a developer's
+   Windows machine was seen stepping back by up to 0.5 s under load). A new member's `joined_at` is therefore the
+   database clock, but never earlier than the latest member of the same group plus a microsecond, chosen while the
+   group row is locked (`nextJoinedAt` in `modules/common/joined.ts`).
 
 ### Reading
 

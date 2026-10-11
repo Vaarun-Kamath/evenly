@@ -77,6 +77,28 @@ describe("members", () => {
       expect(placeholder.isPlaceholder).toBe(true);
     });
 
+    it("keeps join order (which decides rounding) even when the database clock steps backwards", async () => {
+      const group = await createGroup(h, olivia, { name: "Clock" });
+      // Someone whose recorded join time is an hour ahead, as after a clock step.
+      await seedMember(h, {
+        groupId: group.id,
+        userId: adam.userId,
+        name: "Adam",
+        joinedAt: new Date(Date.now() + 3_600_000),
+      });
+      const pat = (
+        await h.as(olivia).post(`/groups/${group.id}/members`, { displayName: "Pat" })
+      ).json<Member>();
+      const invite = (await h.as(olivia).post(`/groups/${group.id}/invites`, {})).json<{
+        url: string;
+      }>();
+      await h.as(mia).post(`/invites/${invite.url.split("/invite/")[1]!}/accept`);
+
+      const names = (await members(olivia, group.id)).map((m) => m.displayName);
+      expect(names).toEqual(["Olivia", "Adam", "Pat", "Mia"]);
+      expect(pat.joinedAt > new Date(Date.now() + 3_500_000).toISOString()).toBe(true);
+    });
+
     it("still lists people who left, marked as left", async () => {
       await freshGroup();
       expect((await h.as(mia).delete(`/groups/${groupId}/members/${miaId}`)).statusCode).toBe(204);

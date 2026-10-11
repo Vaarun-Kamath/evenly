@@ -8,6 +8,7 @@ import { conflict } from "../../http/problem";
 import { netsForGroup, netsForMembers } from "../balances/nets";
 import { assertWritable, requireMember, type GroupRow, type MemberRow } from "../common/access";
 import { diffOf, recordActivity } from "../common/activity";
+import { nextJoinedAt } from "../common/joined";
 import { toIso, toIsoOrNull, type Actor, type DbOrTx } from "../common/db";
 
 function toGroup(group: GroupRow, member: MemberRow, memberCount: number, net: number): Group {
@@ -102,6 +103,7 @@ export async function createGroup(
       userId: actor.userId,
       displayName: actor.name,
       role: "owner",
+      joinedAt: nextJoinedAt(groupId),
     });
     await recordActivity(tx, {
       groupId,

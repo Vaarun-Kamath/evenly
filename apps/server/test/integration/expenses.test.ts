@@ -526,7 +526,6 @@ describe("expenses", () => {
         version: 2,
       });
       expect(changed.shares.map((s) => s.amountMinor)).toEqual([40000, 40000, 40000]);
-      expect(changed.updatedAt >= expense.updatedAt).toBe(true);
 
       const feed = (await h.as(g.alice).get(`/groups/${g.groupId}/activity`)).json<{
         items: { kind: string; diff: Record<string, [unknown, unknown]> }[];

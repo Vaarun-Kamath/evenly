@@ -42,7 +42,7 @@ export async function seedMember(
   await h.db
     .sql`insert into group_members (id, group_id, user_id, display_name, role, left_at, joined_at)
                  values (${id}, ${options.groupId}, ${options.userId ?? null}, ${options.name},
-                         ${options.role ?? "member"}, ${options.leftAt?.toISOString() ?? null}::timestamptz, coalesce(${options.joinedAt?.toISOString() ?? null}::timestamptz, now()))`;
+                         ${options.role ?? "member"}, ${options.leftAt?.toISOString() ?? null}::timestamptz, coalesce(${options.joinedAt?.toISOString() ?? null}::timestamptz, greatest(now(), coalesce((select max(joined_at) from group_members where group_id = ${options.groupId}), 'epoch'::timestamptz) + interval '1 microsecond')))`;
   return id;
 }
 

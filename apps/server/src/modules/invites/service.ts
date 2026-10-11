@@ -15,6 +15,7 @@ import { conflict, gone, notFound, ProblemError } from "../../http/problem";
 import type { Mailer } from "../../mail/mailer";
 import { assertWritable, isUuid, requireMember, type MemberRow } from "../common/access";
 import { recordActivity } from "../common/activity";
+import { nextJoinedAt } from "../common/joined";
 import { toIso, toIsoOrNull, type Actor, type DbOrTx, type Tx } from "../common/db";
 import { hashInviteToken, isWellFormedToken, newInviteToken } from "./token";
 
@@ -400,6 +401,7 @@ export async function acceptInvite(
       userId: actor.userId,
       displayName: actor.name,
       role: "member",
+      joinedAt: nextJoinedAt(group.id),
     });
     await recordActivity(tx, {
       groupId: group.id,

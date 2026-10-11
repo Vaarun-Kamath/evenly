@@ -15,6 +15,7 @@ import {
   type MemberRow,
 } from "../common/access";
 import { diffOf, recordActivity } from "../common/activity";
+import { nextJoinedAt } from "../common/joined";
 import { toIso, toIsoOrNull, type Actor, type DbOrTx, type Tx } from "../common/db";
 
 function toMember(row: MemberRow, group: GroupRow, actor: Actor, net: number): Member {
@@ -77,6 +78,7 @@ export async function addPlaceholder(
       displayName: input.displayName,
       email: input.email ?? null,
       role: "member",
+      joinedAt: nextJoinedAt(groupId),
     });
     await recordActivity(tx, {
       groupId,
