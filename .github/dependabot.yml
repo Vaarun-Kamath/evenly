@@ -7,6 +7,13 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Pinned to the 5.9 line until typescript-eslint supports a newer TypeScript (ADR-0001).
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # Node type definitions follow the Node LTS the project runs on (24), not the newest Node.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -15,3 +22,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Only Node LTS releases, moved to deliberately (ADR-0001); not Node 25 and other odd releases.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
